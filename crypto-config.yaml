@@ -1,0 +1,134 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+#A- SANS ("sans") MEANS "WITHOUT"
+# ---------------------------------------------------------------------------
+# "OrdererOrgs" - Definition of organizations managing orderer nodes
+# ---------------------------------------------------------------------------
+OrdererOrgs:
+  # ---------------------------------------------------------------------------
+  # Orderer
+  # ---------------------------------------------------------------------------
+  - Name: Orderer
+    Domain: example.com #A- Domain Name you want to give to your orderer organization
+    EnableNodeOUs: true #A- True if we want to enable "Node Organizational Units" or not.
+    # ---------------------------------------------------------------------------
+    # "Specs" - See PeerOrgs below for complete description
+    # A- If you specify multiple Hostnames under orderer Orgs's Specs, you essentially mean to add that many orderers under this Domain.
+    # A- The number of Hostnames you add under Specs below, that many containers (orderers) will be spun up by Fabric (Theoretically - need to confirm)
+    # ---------------------------------------------------------------------------
+    Specs:
+      - Hostname: orderer # A- This is the actual name picked up by the folder name under 'ordererOrganizations/orderers/' and/or container that will be loaded for this orderer.
+        SANS: 
+          - "localhost"
+          - "127.0.0.1"
+      - Hostname: orderer2
+        SANS:
+          - "localhost"
+          - "127.0.0.1"
+      #- Hostname: orderer3
+      #- Hostname: orderer4
+      #- Hostname: orderer5
+
+# ---------------------------------------------------------------------------
+# "PeerOrgs" - Definition of organizations managing peer nodes
+# ---------------------------------------------------------------------------
+PeerOrgs:
+  # ---------------------------------------------------------------------------
+  # Org1
+  # ---------------------------------------------------------------------------
+  - Name: Org1
+    Domain: org1.example.com
+    EnableNodeOUs: true
+    # ---------------------------------------------------------------------------
+    # "Specs"
+    # ---------------------------------------------------------------------------
+    # Uncomment this section to enable the explicit definition of hosts in your
+    # configuration.  Most users will want to use Template, below
+    #
+    # Specs is an array of Spec entries.  Each Spec entry consists of two fields:
+    #   - Hostname:   (Required) The desired hostname, sans the domain. 
+        # A- "sans" means 'without' so they meant to say "hostname without domain"
+    #   - CommonName: (Optional) Specifies the template or explicit override for
+    #                 the CN.  By default, this is the template:
+    #
+    #                              "{{.Hostname}}.{{.Domain}}"
+                # A- The above notation is of Docker inspect's JSON format fetching method
+                # A- To get more info about the above notation, look at the examples: https://docs.docker.com/engine/reference/commandline/inspect/#examples
+    #
+    #                 which obtains its values from the Spec.Hostname and
+    #                 Org.Domain, respectively. 
+        # A- So in case of our orderer, the folder name under 'ordererOrganizations/orderers/' and/or container's name "should" be this CommonName they talk about. 
+        # A- Thus, folder name under 'ordererOrganizations/orderers/' and/or orderer container name, for eg, would become Spec.Hostname (orderer) + Org.Domain (example.com) i.e. orderer.example.com 
+    # ---------------------------------------------------------------------------
+    # Specs:
+    #   - Hostname: foo # implicitly "foo.org1.example.com"
+    #     CommonName: foo27.org5.example.com # overrides Hostname-based FQDN set above.
+        # A- The above comment simply means CommonName is just a way to hardcode a name if you don't prefer the idea of Hostname+domain type template format as I explained above.
+    #   - Hostname: bar
+    #   - Hostname: baz
+    # ---------------------------------------------------------------------------
+    # "Template"
+    # ---------------------------------------------------------------------------
+    # Allows for the definition of 1 or more hosts that are created sequentially
+    # from a template. By default, this looks like "peer%d" from 0 to Count-1.
+    # You may override the number of nodes (Count), the starting index (Start)
+    # or the template used to construct the name (Hostname).
+    #
+    # Note: Template and Specs are not mutually exclusive (A- Meaning that they can work together).  You may define both
+    # sections and the aggregate nodes will be created for you.  Take care with
+    # name collisions
+    # ---------------------------------------------------------------------------
+    Template:
+      Count: 2 # This will make: peer0, peer1, peer2. So if we imagine it as a 'set', {peer0, peer1, peer2}
+      #Start: 5 # A- If not specified, will be 0. This will make peer directories (under org1.example.com/peers) as peer5..., peer6.... and so on.. that is it "starts" from 5  
+      #Hostname: {{.Prefix}}{{.Index}} # default # If you want to hardcode peer names (To avoid folder name conflicts, cryptogen only creates 1 folder eventhough you specified '2' peers)
+    # Just using "Spec" below to test Template vs Spec: (It is not required and FYI, you can simply use the same format used for Org2 PeerOrg):
+    Specs: # This will make: peer1, peer2, peer3. If we imagine this as a 'set', { peer1, peer2, peer3 }
+      - Hostname: peer0
+        SANS: 
+          - "localhost"
+          - "127.0.0.1"
+        #CommonName: FIRSTPEER # Hardcoded a name to FIRSTPEER... however, because also exist.. "peer1" will still be made.  
+      - Hostname: peer1 
+        SANS: 
+          - "localhost"
+          - "127.0.0.1"
+      - Hostname: peer2
+        SANS:
+          - "localhost"
+          - "127.0.0.1"
+      #- Hostname: peer3
+        #CommonName: THIRDPEER # This was used to add a peer3 BUT with a name "THIRDPEER".. Template added peer0, peer1, peer2
+    # Template is non-mutually exclusive to Specs, in set form, means resulting set will be: { peer0, peer1, peer2, peer3 } 
+    # Why would you use "Specs"?:
+    # You will gain the ability to give 'CommonName' to the certain peers  
+    # ---------------------------------------------------------------------------
+    # "Users"
+    # ---------------------------------------------------------------------------
+    # Count: The number of user accounts _in addition_ to Admin
+    # This count is just specified in case we have a fixed number of users (actual clients that will use the application via the Peer)
+    # This 
+    # ---------------------------------------------------------------------------
+    Users:
+      Count: 1
+  # ---------------------------------------------------------------------------
+  # Org2: See "Org1" for full specification
+  # ---------------------------------------------------------------------------
+  - Name: Org2
+    Domain: org2.example.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+    Specs:
+      - Hostname: peer0
+        SANS:
+          - "localhost"
+          - "127.0.0.1"
+      - Hostname: peer1
+        SANS:
+          - "localhost"
+          - "127.0.0.1"
+    Users:
+      Count: 1
