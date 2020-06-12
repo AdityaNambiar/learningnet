@@ -11,7 +11,7 @@ _Note_: After watching Video No. 13, watch No. 18 (the videos are incorrectly nu
   
 
 ### Steps (follow this sequence strictly):
-#### Sequence to start a network: {#networkup}
+#### <a name="#networkup"></a>Sequence to start a network:   
 NOTE: If you receive any DeltaSet error and find 'unknown authority error' in orderer logs, 
 perform a clean up using the long command given in [Cleanup](#cleanup)
 
@@ -42,7 +42,7 @@ perform a clean up using the long command given in [Cleanup](#cleanup)
 `watch --color docker logs --since 5s orderer.example.com `  
 
 --- 
-#### Cleanup {#cleanup}
+#### <a name="cleanup"></a>Cleanup 
 While cleanup, make sure to remove `crypto` and `fabric` folders from the network's directory (these contain an older version of your network crypto material - the CAs present in these won't recognize the new entities you added in configuration):
 
 `sudo rm -r ../{crypto,fabric};`  
