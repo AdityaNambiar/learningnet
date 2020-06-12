@@ -80,9 +80,9 @@ createChannel(){
     # --tls = boolean value to decide whether to use TLS communication when talking with orderer or not.
     # --cafile = orderer's root CA path
     # For more info: just type 'peer channel' to see help information 
-     peer channel create -o localhost:7050 -c ofss-mum \
+     peer channel create -o localhost:7050 -c $CHANNEL_NAME \
      --ordererTLSHostnameOverride orderer.example.com \
-     -f ../channel-artifacts/ofss-mum.tx --outputBlock ../channel-artifacts/ofss-mum.block \
+     -f ../channel-artifacts/$CHANNEL_NAME.tx --outputBlock ../channel-artifacts/$CHANNEL_NAME.block \
      --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA
 
 }
@@ -94,24 +94,38 @@ createChannel(){
 
 
 joinChannel(){
+    # Why do we set global env variables before each peer command as seen below?
+    # Ans: These commands will point to the appropriate peer when executing commands on terminal 
+    #      by setting environment variables (Which will override the config/core.yaml values for peer)
+    #      Unfortunately, there is no single direct documentation to pick up these environment variables,
+    #      But if you have completed their BYFN tutorial (or some other tutorial), you'd be able to know which ENV variables to copy and paste in your script
+    #      
+    #      Basically, there are 2/3 things that these ENV variables add to the terminal instance...:
+    #      1. (If you want TLS communication) a boolean value to know if TLS is enabled or not
+    #      2. (If TLS is enabled) The TLS Root certificate which will be used during communication.
+    #      3. Peer's MSP ID (what you wrote in configtx.yaml for MSP ID under Organization/<peerOrganization>'s configuration for "ID: ")
+    #      4. Peer's MSP config path (the msp directory of the Admin user of a specific peerOrganization)
+    #      5. Address of the Peer, i.e. IP + Port.
     setGlobalsForPeer0Org1
     # After we have used one peer to create a channel for all entities... 
     # ...next we will be using the '.block' file to connect all other peers to channel
-    peer channel join -b ../channel-artifacts/ofss-mum.block
+    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
     
     setGlobalsForPeer1Org1
-    peer channel join -b ../channel-artifacts/ofss-mum.block
+    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
     
     setGlobalsForPeer0Org2
-    peer channel join -b ../channel-artifacts/ofss-mum.block
+    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
     
     setGlobalsForPeer1Org2
-    peer channel join -b ../channel-artifacts/ofss-mum.block
+    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
     
 }
 
 updateAnchorPeers(){
     # We will now update the channel to identify Peer0 of org1 to become anchor peer for org1.
+    # The peer you choose over here MUST be the one that you defined to be made 'AnchorPeer' 
+    # ... under Organization/<peerOrganization>'s configuration for "AnchorPeers: "
     setGlobalsForPeer0Org1
     peer channel update -o localhost:7050 -c $CHANNEL_NAME \
     --ordererTLSHostnameOverride orderer.example.com \
