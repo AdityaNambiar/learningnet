@@ -20,18 +20,18 @@ services:
     ports:
       - 7050:7050
 
-  # orderer2.example.com:
-  #   container_name: orderer2.example.com
-  #   extends: # This will bring in all those Environment variables that were written for orderer-base in ./base/peer-base.yaml
-  #     file: peer-base.yaml
-  #     service: orderer-base
-  #   volumes:
-  #       - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-  #       - ../crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/msp:/var/hyperledger/orderer/msp
-  #       - ../crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/tls:/var/hyperledger/orderer/tls
-  #       - orderer2.example.com:/var/hyperledger/production/orderer
-  #   ports:
-  #     - 8050:7050
+  orderer2.example.com:
+    container_name: orderer2.example.com
+    extends: # This will bring in all those Environment variables that were written for orderer-base in ./base/peer-base.yaml
+      file: peer-base.yaml
+      service: orderer-base
+    volumes:
+        - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ../crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/msp:/var/hyperledger/orderer/msp
+        - ../crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/tls:/var/hyperledger/orderer/tls
+        - orderer2.example.com:/var/hyperledger/production/orderer
+    ports:
+      - 8050:8050
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com

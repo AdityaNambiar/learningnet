@@ -56,6 +56,7 @@ Organizations:
 
         OrdererEndpoints:
             - orderer.example.com:7050
+            - orderer2.example.com:8050
 
     - &Org1
         # DefaultOrg defines the organization which is used in the sampleconfig
@@ -237,10 +238,10 @@ Orderer: &OrdererDefaults
           Port: 7050
           ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
           ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
-    #     - Host: orderer2.example.com
-    #       Port: 8050
-    #       ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
-    #       ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
+        - Host: orderer2.example.com
+          Port: 8050
+          ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
+          ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
     # Batch Timeout: The amount of time to wait before creating a batch
     # A- The max time orderer has to wait until it says "block is ready" (finalized) with any number of transactions within.
     # A- This means for BatchTimeout of "2 seconds", orderer waits until there are any transactions within the 2 seconds 

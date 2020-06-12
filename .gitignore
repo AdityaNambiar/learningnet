@@ -1,6 +1,6 @@
 #/channel-artifacts/*.tx
 #/channel-artifacts/*.block
-/crypto-config/*
+crypto-config
 /ledgers
 /ledgers-backup
 #/channel-artifacts/*.json

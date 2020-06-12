@@ -23,6 +23,7 @@ OrdererOrgs:
         SANS: 
           - "localhost"
           - "127.0.0.1"
+        # A- Here I am adding a new orderer:
       - Hostname: orderer2
         SANS:
           - "localhost"
