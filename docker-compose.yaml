@@ -3,7 +3,7 @@
 version: "2"
 
 networks:
-  test:
+  lnet:
 
 services:
   ca-org1:
@@ -25,7 +25,7 @@ services:
     container_name: ca.org1.example.com
     hostname: ca.org1.example.com
     networks:
-      - test
+      - lnet
 
   ca-org2:
     image: hyperledger/fabric-ca:$CA_IMAGE_TAG
@@ -46,7 +46,7 @@ services:
     container_name: ca.org2.example.com
     hostname: ca.org2.example.com
     networks:
-      - test
+      - lnet
 
   orderer.example.com:
     container_name: orderer.example.com
@@ -77,7 +77,7 @@ services:
       - 7050:7050
       - 8443:8443
     networks:
-      - test
+      - lnet
     volumes:
       - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/genesis.block
       - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
@@ -112,7 +112,7 @@ services:
       - 8050:8050
       - 8444:8443
     networks:
-      - test
+      - lnet
     volumes:
       - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/genesis.block
       - ./crypto-config/ordererOrganizations/example.com/orderers/orderer2.example.com/msp:/var/hyperledger/orderer/msp
@@ -127,7 +127,7 @@ services:
     ports:
       - 5984:5984
     networks:
-      - test
+      - lnet
 
   couchdb1:
     container_name: couchdb1
@@ -138,7 +138,7 @@ services:
     ports:
       - 6984:5984
     networks:
-      - test
+      - lnet
 
   couchdb2:
     container_name: couchdb2
@@ -149,7 +149,7 @@ services:
     ports:
       - 7984:5984
     networks:
-      - test
+      - lnet
 
   couchdb3:
     container_name: couchdb3
@@ -160,7 +160,7 @@ services:
     ports:
       - 8984:5984
     networks:
-      - test
+      - lnet
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
@@ -172,7 +172,7 @@ services:
       - ORDERER_GENERAL_LOGLEVEL=DEBUG
       - CORE_PEER_LOCALMSPID=Org1MSP
 
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_lnet
 
       - CORE_PEER_ID=peer0.org1.example.com
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
@@ -204,7 +204,7 @@ services:
       - /var/run/:/host/var/run/
       - .:/etc/hyperledger
     networks:
-      - test
+      - lnet
 
   peer1.org1.example.com:
     container_name: peer1.org1.example.com
@@ -216,7 +216,7 @@ services:
       - ORDERER_GENERAL_LOGLEVEL=debug
       - CORE_PEER_LOCALMSPID=Org1MSP
 
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_lnet
 
       - CORE_PEER_ID=peer1.org1.example.com
       - CORE_PEER_ADDRESS=peer1.org1.example.com:8051
@@ -245,7 +245,7 @@ services:
       - /var/run/:/host/var/run/
       - ./:/etc/hyperledger/
     networks:
-      - test
+      - lnet
 
   peer0.org2.example.com:
     container_name: peer0.org2.example.com
@@ -257,7 +257,7 @@ services:
       - ORDERER_GENERAL_LOGLEVEL=debug
       - CORE_PEER_LOCALMSPID=Org2MSP
 
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_lnet
 
       - CORE_PEER_ID=peer0.org2.example.com
       - CORE_PEER_ADDRESS=peer0.org2.example.com:9051
@@ -286,7 +286,7 @@ services:
       - /var/run/:/host/var/run/
       - ./:/etc/hyperledger/
     networks:
-      - test
+      - lnet
 
   peer1.org2.example.com:
     container_name: peer1.org2.example.com
@@ -298,7 +298,7 @@ services:
       - ORDERER_GENERAL_LOGLEVEL=debug
       - CORE_PEER_LOCALMSPID=Org2MSP
 
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_test
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=artifacts_lnet
 
       - CORE_PEER_ID=peer1.org2.example.com
       - CORE_PEER_ADDRESS=peer1.org2.example.com:10051
@@ -327,4 +327,4 @@ services:
       - /var/run/:/host/var/run/
       - ./:/etc/hyperledger/
     networks:
-      - test
+      - lnet

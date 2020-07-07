@@ -20,6 +20,7 @@ perform a clean up using the long command given in [Cleanup](#cleanup)
 3. NetworkUp step: Run `docker-compose down; docker volume prune -f; docker-compose up -d`
 4. ChannelCreate step: To start the channel, Run `./myscripts/createChannel.sh`
 
+P.S.: Added `./startLNet.sh` to combine all above 4 steps.
 
 #### Sequence to add a new orderer (Static i.e. when you _don't_ have the network up & running):
 
@@ -49,7 +50,6 @@ While cleanup, make sure to remove `crypto` and `fabric` folders from the networ
 The curly braces is the _bash_ syntax to combine: `../crypto` & `../fabric` 
   
 Full/Long clean up command:
-`sudo rm -r ../{crypto,fabric,crypto-config,channel-artifacts/genesis.block,channel-artifacts/ofss-mum.tx`
+`sudo rm -r ../{crypto,fabric,crypto-config,channel-artifacts/*}`
 
-- Make sure to replace "ofss-mum" with $CHANNEL_NAME value.
-
+P.S.: Added `./stopLNet.sh` to combine cleanup work.
