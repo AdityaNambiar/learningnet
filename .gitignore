@@ -6,4 +6,4 @@ crypto-config
 #/channel-artifacts/*.json
 /org3-artifacts/crypto-config/*
 /connection-*.*
-
+**/node_modules

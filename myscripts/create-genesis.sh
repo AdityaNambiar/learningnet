@@ -17,6 +17,10 @@ To find out whats inside 'CHANNEL_NAME.tx / genesis block' and also to understan
 https://stackoverflow.com/a/57562829  
 comment
 
+if [ -d ../channel-artifacts/ ]; then
+	echo "Emptying channel-artifacts...";
+	sudo rm -rf ../channel-artifacts/*
+fi
 export SYS_CHANNEL_NAME="ofss"
 export CHANNEL_NAME="ofss-mum"
 export CORE_PEER_LOCALMSPID_org1="Org1MSP"

@@ -9,4 +9,8 @@ Entities right now:
 2 peerOrganizations (orgs of which peers will be present on the network)
 comment
 
+if [ -d ../crypto-config/ ]; then
+	echo "Emptying crypto-config...";
+	sudo rm -rf ../crypto-config/
+fi
 cryptogen generate --config=../crypto-config.yaml --output=../crypto-config
