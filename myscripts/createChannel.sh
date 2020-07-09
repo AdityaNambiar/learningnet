@@ -13,7 +13,6 @@ A. 1. Entities that communicate with each other while having TLS enabled will re
    So we provide the Root CA certificate path to include the certificate from which the server.cert (tls public key/certificate) and server.key (tls private key) came into being.
 
 channel
-
 export CORE_PEER_TLS_ENABLED=true # A- We will be having TLS Communication ENABLED.
 # Orderer's Root CA certificate (A way to trust this Root CA) path:
 export ORDERER_CA=../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
@@ -22,9 +21,9 @@ export PEER0_ORG1_CA=../crypto-config/peerOrganizations/org1.example.com/peers/p
 # Peer0 of Org2's Root CA certificate path:
 export PEER0_ORG2_CA=../crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
 # Path to config folder which is packaged within fabric-samples (it contains 3 yaml files: configtx, core, orderer...yaml files)
-export FABRIC_CFG_PATH=../config/
+export FABRIC_CFG_PATH=./config/
 
-export CHANNEL_NAME="ofss-mum"
+export CHANNEL_NAME="lnet-1"
 
 setGlobalsForOrderer(){
     # A- Don't replace ROOTCERT_FILE path with ORDERER_CA because if this function is called from elsewhere it won't be able to fetch the value of $ORDERER_CA
@@ -80,10 +79,11 @@ createChannel(){
     # --tls = boolean value to decide whether to use TLS communication when talking with orderer or not.
     # --cafile = orderer's root CA path
     # For more info: just type 'peer channel' to see help information 
-     peer channel create -o localhost:7050 -c $CHANNEL_NAME \
-     --ordererTLSHostnameOverride orderer.example.com \
-     -f ../channel-artifacts/$CHANNEL_NAME.tx --outputBlock ../channel-artifacts/$CHANNEL_NAME.block \
-     --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA
+    echo "Creating channel..."
+    peer channel create -o localhost:7050 -c $CHANNEL_NAME \
+    --ordererTLSHostnameOverride orderer.example.com \
+    -f ./channel-artifacts/$CHANNEL_NAME.tx --outputBlock ./channel-artifacts/$CHANNEL_NAME.block \
+    --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA
 
 }
 
@@ -94,6 +94,7 @@ createChannel(){
 
 
 joinChannel(){
+    echo "Joining channel..."
     # Why do we set global env variables before each peer command as seen below?
     # Ans: These commands will point to the appropriate peer when executing commands on terminal 
     #      by setting environment variables (Which will override the config/core.yaml values for peer)
@@ -109,34 +110,35 @@ joinChannel(){
     setGlobalsForPeer0Org1
     # After we have used one peer to create a channel for all entities... 
     # ...next we will be using the '.block' file to connect all other peers to channel
-    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
+    peer channel join -b ./channel-artifacts/$CHANNEL_NAME.block
     
     setGlobalsForPeer1Org1
-    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
+    peer channel join -b ./channel-artifacts/$CHANNEL_NAME.block
     
     setGlobalsForPeer0Org2
-    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
+    peer channel join -b ./channel-artifacts/$CHANNEL_NAME.block
     
     setGlobalsForPeer1Org2
-    peer channel join -b ../channel-artifacts/$CHANNEL_NAME.block
+    peer channel join -b ./channel-artifacts/$CHANNEL_NAME.block
     
 }
 
 updateAnchorPeers(){
+    echo "Updating anchor peers on channel..."
     # We will now update the channel to identify Peer0 of org1 to become anchor peer for org1.
     # The peer you choose over here MUST be the one that you defined to be made 'AnchorPeer' 
     # ... under Organization/<peerOrganization>'s configuration for "AnchorPeers: "
     setGlobalsForPeer0Org1
     peer channel update -o localhost:7050 -c $CHANNEL_NAME \
     --ordererTLSHostnameOverride orderer.example.com \
-     -f ../channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx \
+     -f ./channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx \
     --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA
     
     # We will now update the channel to identify Peer0 of org2 to become anchor peer for org2.
     setGlobalsForPeer0Org2
     peer channel update -o localhost:7050 -c $CHANNEL_NAME \
     --ordererTLSHostnameOverride orderer.example.com \
-    -f ../channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx \
+    -f ./channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx \
     --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA
     
 }

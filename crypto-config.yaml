@@ -24,10 +24,10 @@ OrdererOrgs:
           - "localhost"
           - "127.0.0.1"
         # A- Here I am adding a new orderer:
-      - Hostname: orderer2
-        SANS:
-          - "localhost"
-          - "127.0.0.1"
+      # - Hostname: orderer2
+      #   SANS:
+      #     - "localhost"
+      #     - "127.0.0.1"
       #- Hostname: orderer3
       #- Hostname: orderer4
       #- Hostname: orderer5
@@ -82,7 +82,7 @@ PeerOrgs:
     # name collisions
     # ---------------------------------------------------------------------------
     Template:
-      Count: 2 # This will make: peer0, peer1, peer2. So if we imagine it as a 'set', {peer0, peer1, peer2}
+      Count: 2 # This will make: peer0, peer1, peer2 (if Count was set to 3). So if we imagine it as a 'set', {peer0, peer1, peer2}
       #Start: 5 # A- If not specified, will be 0. This will make peer directories (under org1.example.com/peers) as peer5..., peer6.... and so on.. that is it "starts" from 5  
       #Hostname: {{.Prefix}}{{.Index}} # default # If you want to hardcode peer names (To avoid folder name conflicts, cryptogen only creates 1 folder eventhough you specified '2' peers)
     # Just using "Spec" below to test Template vs Spec: (It is not required and FYI, you can simply use the same format used for Org2 PeerOrg):
@@ -96,10 +96,10 @@ PeerOrgs:
         SANS: 
           - "localhost"
           - "127.0.0.1"
-      - Hostname: peer2
-        SANS:
-          - "localhost"
-          - "127.0.0.1"
+      # - Hostname: peer2
+      #   SANS:
+      #     - "localhost"
+      #     - "127.0.0.1"
       #- Hostname: peer3
         #CommonName: THIRDPEER # This was used to add a peer3 BUT with a name "THIRDPEER".. Template added peer0, peer1, peer2
     # Template is non-mutually exclusive to Specs, in set form, means resulting set will be: { peer0, peer1, peer2, peer3 } 
