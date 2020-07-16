@@ -1,2 +1,2 @@
-const sampleappcontract = require('./lib/samplecontract');
-module.exports.contracts = [ sampleappcontract ];
+const SampleAppContract = require('./lib/sampleappcontract');
+module.exports.contracts = [ SampleAppContract ];

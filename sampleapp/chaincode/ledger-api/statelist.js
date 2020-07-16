@@ -64,6 +64,12 @@ class StateList {
         await this.ctx.stub.putState(key, data);
     }
 
+    async deleteState(state) {
+        let key = this.ctx.stub.createCompositeKey(this.name, state.getSplitKey());
+        let data = State.serialize(state);
+        await this.ctx.stub.deleteState(key, data);
+    }
+
     /** Stores the class for future deserialization */
     use(stateClass) {
         this.supportedClasses[stateClass.getClass()] = stateClass;

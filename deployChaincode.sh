@@ -49,10 +49,10 @@ setGlobalsForPeer1Org2() {
 
 CHANNEL_NAME="lnet-1"
 CC_RUNTIME_LANGUAGE="node"
-VERSION="0.0.4"
+VERSION="0.0.1"
 CC_SRC_PATH="${PWD}/sampleapp/chaincode" # Path to package.json
 CC_NAME="learningnet-chaincode"
-SEQUENCE_NO="4"
+SEQUENCE_NO="1"
 
 packageChaincode() {
     rm -rf ${CC_NAME}.tar.gz
@@ -226,7 +226,7 @@ chaincodeInvoke() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
-        -c '{"function": "init","Args":[""]}'
+        -c '{"function": "initStudRecords","Args":[""]}'
 
     ## Add private data
     # export CAR=$(echo -n "{\"key\":\"1111\", \"make\":\"Tesla\",\"model\":\"Tesla A1\",\"color\":\"White\",\"owner\":\"pavan\",\"price\":\"10000\"}" | base64 | tr -d \\n)
@@ -248,7 +248,7 @@ chaincodeQuery() {
 
     # Query hello world function
 
-    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "helloworld","Args":["MAH COR"]}'
+    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "showStudents","Args":[""]}'
 
     # Query Private Car by Id
     # peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "readPrivateCar","Args":["1111"]}'

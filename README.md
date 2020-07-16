@@ -20,7 +20,7 @@ perform a clean up using the long command given in [Cleanup](#cleanup)
 3. NetworkUp step: Run `docker-compose down; docker volume prune -f; docker-compose up -d`
 4. ChannelCreate step: To start the channel, Run `./myscripts/createChannel.sh`
 
-P.S.: Added `./startLNet.sh` to combine all above 4 steps.
+_P.S._: Added `./startLNet.sh` to combine all above 4 steps.
 
 #### Sequence to add a new orderer (Static i.e. when you _don't_ have the network up & running):
 
@@ -46,10 +46,18 @@ P.S.: Added `./startLNet.sh` to combine all above 4 steps.
 #### <a name="cleanup"></a>Cleanup 
 While cleanup, make sure to remove `crypto` and `fabric` folders from the network's directory (these contain an older version of your network crypto material - the CAs present in these won't recognize the new entities you added in configuration):
 
-`sudo rm -r ../{crypto,fabric};`  
+`sudo rm -r ./{crypto,fabric};`  
 The curly braces is the _bash_ syntax to combine: `../crypto` & `../fabric` 
   
 Full/Long clean up command:
-`sudo rm -r ../{crypto,fabric,crypto-config,channel-artifacts/*}`
+`sudo rm -r ./{crypto,fabric,crypto-config,channel-artifacts/*,sampleapp/hyperledger}`
 
-P.S.: Added `./stopLNet.sh` to combine cleanup work.
+_P.S._: Added `./stopLNet.sh` to combine cleanup work.
+
+
+
+#### Important links to documentation:
+- [Chaincode in JS SDK documentation](https://hyperledger.github.io/fabric-chaincode-node/release-2.2/api/index.html)
+
+- [NodeJS API SDK documentation](https://hyperledger.github.io/fabric-sdk-node/master/index.html)
+
