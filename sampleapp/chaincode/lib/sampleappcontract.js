@@ -85,17 +85,26 @@ class SampleAppContract extends Contract {
         console.log("grade obj: ",grade);
         await ctx.gradeslist.addGrades(grade);
         // Create a new student:
-        const id = Date.now();
-        const name = 'Ezio';
-        const year = 'first';
-        const student = Students.createInstance({ id, year, name, grade })
+        const student = {
+            id: Date.now(),
+            name: 'Ezio',
+            year: 'fourth',
+            grade: grade
+        }
+        const 
+        const student = Students.createInstance(student);
         console.log("student obj: ", student);
         await ctx.studentslist.addStudent(student);
         return "Initialized "+this.contractname+"\n"+student;
     }
     async showStudents(ctx){
         try {
-            const 
+            console.log("Retrieving first student record...");
+            const id = '0', endid = '100';
+            let result = []
+            for await(const res of ctx.stub.getStateByRange(id, endid)) {
+                result.push(res.value.toString('utf-8')); // Returns an array of results
+            }
             return result;
         } catch(err) {
             throw new Error(`showStudents error: ${err}`);

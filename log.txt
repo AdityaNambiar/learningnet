@@ -1,2 +1,2 @@
 Installed chaincodes on peer:
-Package ID: learningnet-chaincode_0.0.1:f6687a4e8272b9700d7cd1a35d199807557b8dc02bc9e99cb5a59c3f08841820, Label: learningnet-chaincode_0.0.1
+Package ID: learningnet-chaincode_0.0.1:22edda07e716b016c022efc70eac181975c81f4799f33f2c75f7d704ac95a882, Label: learningnet-chaincode_0.0.1
