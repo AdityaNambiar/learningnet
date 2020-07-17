@@ -1,7 +1,7 @@
 // Utility class for collections of ledger states --  a state list
 const StateList = require('./../../../ledger-api/statelist.js');
 
-const Grades = require('../../grades.js');
+const Grades = require('../grades.js');
 
 class GradesList extends StateList {
 

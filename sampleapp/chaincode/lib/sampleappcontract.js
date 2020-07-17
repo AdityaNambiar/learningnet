@@ -85,17 +85,17 @@ class SampleAppContract extends Contract {
         console.log("grade obj: ",grade);
         await ctx.gradeslist.addGrades(grade);
         // Create a new student:
-        const studid = Date.now();
-        const studname = 'Ezio';
-        const studyear = 'first';
-        const student = Students.createInstance({ studid, studyear, studname, grade })
+        const id = Date.now();
+        const name = 'Ezio';
+        const year = 'first';
+        const student = Students.createInstance({ id, year, name, grade })
         console.log("student obj: ", student);
         await ctx.studentslist.addStudent(student);
         return "Initialized "+this.contractname+"\n"+student;
     }
     async showStudents(ctx){
         try {
-            
+            const 
             return result;
         } catch(err) {
             throw new Error(`showStudents error: ${err}`);

@@ -1,7 +1,7 @@
 /**
  * Bringing in the ledger-api to handle States of our asset
  */
-const State = require('../ledger-api/state.js');
+const State = require('../../ledger-api/state.js');
 /**
  * Grade asset:
    ```

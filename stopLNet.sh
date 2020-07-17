@@ -1,5 +1,5 @@
-#set -e # Stop the script if any error occurs
 sudo rm -r ${PWD}/{crypto,fabric,crypto-config,channel-artifacts/*};
+set -e # Stop the script if any error occurs after this point
 docker-compose down; 
 docker volume prune -f;
 # rm ./sampleapp/middleware/fabric-artifacts/hlf-connection-profile.json
@@ -19,8 +19,9 @@ fi
 echo "Removing previous chaincode image and volumes to avoid possibility of conflicts (Recommended by Fabric documentation)"
 docker volume prune -f
 docker rmi -f $(docker images -q -f "reference=dev-*")
+
 if [ $? -ne 0 ]
-then 
+then
 	echo "Could not remove chaincode image (dev-peer...). Please try this yourself and read the error: docker rmi $(grep 'dev') -f "
 	exit;
 fi 
