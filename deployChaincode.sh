@@ -54,6 +54,11 @@ CC_SRC_PATH="${PWD}/sampleapp/chaincode" # Path to package.json
 CC_NAME="learningnet-chaincode"
 SEQUENCE_NO="1"
 
+#
+# Following Hyperledger Fabric Chaincode lifecycle introduced in v2.0
+#
+# Refer: https://hyperledger-fabric.readthedocs.io/en/release-2.0/chaincode_lifecycle.html
+#
 packageChaincode() {
     rm -rf ${CC_NAME}.tar.gz
     setGlobalsForPeer0Org1
@@ -73,6 +78,8 @@ installChaincode() {
     # peer lifecycle chaincode install ${CC_NAME}.tar.gz
     # echo "===================== Chaincode is installed on peer1.org1 ===================== "
 
+    # If you want peer0 of org2 to be endorser peer, then uncomment the below three lines (setting globals for the peer, chaincode install and -optional- echo message)
+    # How does a peer become an endorsing peer?: https://stackoverflow.com/a/58221692
     setGlobalsForPeer0Org2
     peer lifecycle chaincode install ${CC_NAME}.tar.gz
     echo "===================== Chaincode is installed on peer0.org2 ===================== "
@@ -192,7 +199,7 @@ chaincodeInvokeInit() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
-        --isInit -c '{"function": "initStudRecords","Args":[]}'
+        --isInit -c '{"function": "initStudRecords","Args":[""]}'
 
 }
 
@@ -207,7 +214,7 @@ chaincodeInvoke() {
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
-        -c '{"function": "initStudRecords","Args":[]}'
+        -c '{"function": "initStudRecords","Args":[""]}'
 
     ## Add private data
     # export CAR=$(echo -n "{\"key\":\"1111\", \"make\":\"Tesla\",\"model\":\"Tesla A1\",\"color\":\"White\",\"owner\":\"pavan\",\"price\":\"10000\"}" | base64 | tr -d \\n)
@@ -225,19 +232,71 @@ chaincodeInvoke() {
 # chaincodeInvoke
 
 chaincodeQuery() {
-    setGlobalsForPeer0Org2
+    setGlobalsForPeer0Org1
+    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "showGrades","Args":[""]}'
 
-    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "showStudents","Args":[]}'
+    setGlobalsForPeer0Org2
+    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "showStudents","Args":[""]}'
 
     # Query Private Car by Id
     # peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "readPrivateCar","Args":["1111"]}'
     # peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "readCarPrivateDetails","Args":["1111"]}'
 }
 
+
 # chaincodeQuery
 
-# Run this function if you add any new dependency in chaincode
-# presetup
+quickExecChaincodeFuncs(){
+    # Use 'peer chaincode invoke' when you want a request to be entered into the ledger otherwise use 'peer chaincode query' 
+    setGlobalsForPeer0Org2
+    peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.example.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
+    -c '{"function": "addStudent","Args":["{\"id\":2,\"name\":\"Aditya Nambiar\",\"year\":\"fourth\"}","{\"id\":1,\"totalGrade\":297}"]}'
+
+    sleep 3 # we give 3 seconds to allow entry of new student in couchdb
+    
+    setGlobalsForPeer0Org1
+    peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.example.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
+    -c '{"function": "getStudent","Args":["{\"id\":2}"]}'
+    
+    setGlobalsForPeer0Org2
+    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "showStudents","Args":[""]}'
+
+    setGlobalsForPeer0Org1 
+    peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.example.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
+    -c '{"function": "updateStudent","Args":["{\"id\":2,\"name\":\"Aditya Nambiar\",\"year\":\"fourth\",\"grades\":{\"id\":3,\"subA\":100,\"subB\":100,\"subC\":100,\"totalGrade\":300}}"]}'
+    
+    # # # Just to make sure that the student was updated:
+    setGlobalsForPeer0Org2
+    peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} \
+    -c '{"function": "getStudent","Args":["{\"id\":2}"]}'
+    
+    sleep 10 # So that we get 10 seconds to view the state in couchdb (url: http://localhost:5984/_utils/#database/lnet-1_learningnet-chaincode/_all_docs )     
+
+    setGlobalsForPeer0Org2
+     peer chaincode invoke -o localhost:7050 \
+        --ordererTLSHostnameOverride orderer.example.com \
+        --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+        -C $CHANNEL_NAME -n ${CC_NAME} \
+        --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+        --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
+    -c '{"function": "deleteStudent","Args":["{\"id\":2}"]}'
+
+}
 
 packageChaincode
 installChaincode
@@ -253,3 +312,5 @@ sleep 5
 chaincodeInvoke
 sleep 3
 chaincodeQuery
+
+quickExecChaincodeFuncs

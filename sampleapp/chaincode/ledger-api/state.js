@@ -19,7 +19,6 @@ class State {
     constructor(stateClass, keyParts) {
         this.class = stateClass;
         this.key = State.makeKey(keyParts);
-        this.currentState = null;
     }
 
     getClass() {
@@ -34,10 +33,6 @@ class State {
         return State.splitKey(this.key);
     }
 
-    getCurrentState(){
-        return this.currentState;
-    }
-
     serialize() {
         return State.serialize(this);
     }
@@ -49,6 +44,7 @@ class State {
      * @return {buffer} buffer with the data to store
      */
     static serialize(object) {
+        // console.log("serialize object: ", object);
         return Buffer.from(JSON.stringify(object));
     }
 
@@ -61,13 +57,17 @@ class State {
      * @return {json} json with the data to store
      */
     static deserialize(data, supportedClasses) {
+        // console.log("data and supportedClasses (deserialize): \n",supportedClasses, data);
         let json = JSON.parse(data.toString());
+        // console.log("deserialize json: ",json);
         let objClass = supportedClasses[json.class];
+        // console.log("deserialize objClass: ",objClass);
         if (!objClass) {
             throw new Error(`Unknown class of ${json.class}`);
         }
         let object = new (objClass)(json);
 
+        // console.log("deserialize object: ",object);
         return object;
     }
 
@@ -78,8 +78,12 @@ class State {
      * @return {json} json with the data to store
      */
     static deserializeClass(data, objClass) {
+        // console.log("objClass (deserializeClass): ",objClass);
         let json = JSON.parse(data.toString());
+        // console.log("deserializeClass json: ",json);
         let object = new (objClass)(json);
+
+        // console.log("deserializeClass object: ",object);
         return object;
     }
 

@@ -7,6 +7,7 @@ class StudentsList extends StateList {
 
     constructor(ctx) {
         super(ctx, StudentsList.getClass());
+        this.ctx = ctx;
         this.use(Students);
     }
 
@@ -25,11 +26,26 @@ class StudentsList extends StateList {
     async deleteStudent(student) {
         return this.deleteState(student);
     }
-    s
+    
+    async getAllStudents(){
+        console.log("Getting all students...");
+        let result = [];
+        const query = JSON.stringify({
+            "selector": {
+                "_id": {
+                    "$regex":StudentsList.getClass()
+                }
+            }
+        })
+        for await (const res of this.ctx.stub.getQueryResult(query)){
+            // console.log("res:\n ",res.value.toString('utf8'));
+            result.push(JSON.parse(res.value.toString('utf-8')));
+        }
+        return result;
+    }
     static getClass() {
-        return 'org.learningnet.studentslist';
+        return "org.learningnet.studentslist";
     }
 }
-
 
 module.exports = StudentsList;

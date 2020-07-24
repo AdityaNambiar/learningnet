@@ -11,8 +11,8 @@ const Students = require('./models/students.js');
 class SampleAppContext extends Context {
     constructor() {
         super();
-        this.gradeslist = new GradesList(this); // Instantiates this variable "gradeslist" with GradesList methods & properties and also pass 'this' which is the context of the smart contract to be able to access the stub. 
-        this.studentslist = new StudentsList(this);
+        this.gradeList = new GradesList(this); // Instantiates this variable "gradeslist" with GradesList methods & properties and also pass 'this' which is the context of the smart contract to be able to access the stub. 
+        this.studentList = new StudentsList(this);
     }
 }
 class SampleAppContract extends Contract {
@@ -64,114 +64,185 @@ class SampleAppContract extends Contract {
     /**
      * For initialization.
      * Will be called during installation as well as on updates (I.E. Everytime peer has to load the smartcontract)
+     * FEW POINTS TO REMEMBER:
+     * 1. A getState() method - like getStateByRange or any 'getter' won't work in init **as far as I tested**. 
+     * 2. The only purpose of init functions are, to name a few, populate ledgers or set some data migration tasks (don't know what this means and how this works) 
      * @param {Context} ctx Contains context (including custom defined context)
      */
+    /**
+     *  Purpose of function: To populate the ledger by adding one student with full grades on all subjects.
+     *  Algorithm:
+     *  1. Create 'grades' asset(s) 
+     *  2. Create student asset(s) or "participant".
+     *  3. Assign the grade to student. (i.e. assigning asset to participant ~ justifying relationship between participant and asset)
+     *  3. Add the world state with new student and new grade.
+     */
     async initStudRecords(ctx) { 
-        /**
-        *  Purpose of function: To populate the ledger by adding one student with full grades on all subjects.
-        *  Algorithm:
-        *  1. Create one 'grades' asset 
-        *  2. Create one student asset or "participant".
-        *  3. Assign the grade to student.
-        *  3. Add the world state with new student and new grade.
-        */
-        // Create 'grades' asset:
-        const id = Date.now();
+        
+        // Create 'grades' asset(s):
+        const id = 0;
         const subA = 100;
         const subB = 100;
         const subC = 100;
         const totalGrade = subA+subB+subC;
+        const grade2 = { 
+            id: 1,
+            subA: 99,
+            subB: 99,
+            subC: 99,
+            totalGrade: 99+99+99 
+        }
         const grade = Grades.createInstance({ id, subA, subB, subC, totalGrade });
-        console.log("grade obj: ",grade);
-        await ctx.gradeslist.addGrades(grade);
-        // Create a new student:
-        const student = {
-            id: Date.now(),
-            name: 'Ezio',
-            year: 'fourth',
+        const g2 = Grades.createInstance(grade2);
+
+        // Add grades to world state and ledger
+        await ctx.gradeList.addGrades(grade);
+        await ctx.gradeList.addGrades(g2);
+
+        // Create student asset(s) or "participant".
+        const studentobj = {
+            id: 0,
+            name: 'Ezio Auditore',
+            year: 'second',
             grade: grade
         }
-        const 
-        const student = Students.createInstance(student);
-        console.log("student obj: ", student);
-        await ctx.studentslist.addStudent(student);
-        return "Initialized "+this.contractname+"\n"+student;
+        const studentobj2 = {
+            id: 1,
+            name: 'Altair da Masyaf',
+            year: 'first',
+            grade: g2
+        }
+        // Add students to world state and ledger
+        const student = Students.createInstance(studentobj);
+        const student2 = Students.createInstance(studentobj2);
+        await ctx.studentList.addStudent(student);
+        await ctx.studentList.addStudent(student2);
+
+        const studKey = Students.makeKey([studentobj2.id])
+        const stud = await ctx.studentList.getStudent(studKey);
+
+        return { 
+            msg:`Initialized ${this.contractname}`,
+            student: stud
+        };
+    }
+    async showGrades(ctx){
+        try {
+            const grades = await ctx.gradeList.getAllGrades();
+            return { 
+                msg: "List of all grades",
+                result: grades
+            };
+        } catch(err) {
+            throw new Error(`showGrades error: ${err}`);
+        }
     }
     async showStudents(ctx){
         try {
-            console.log("Retrieving first student record...");
-            const id = '0', endid = '100';
-            let result = []
-            for await(const res of ctx.stub.getStateByRange(id, endid)) {
-                result.push(res.value.toString('utf-8')); // Returns an array of results
-            }
-            return result;
+            const students = await ctx.studentList.getAllStudents();
+            return { 
+                msg: "List of all students",
+                result: students
+            };
         } catch(err) {
             throw new Error(`showStudents error: ${err}`);
         }
     }
-    async getStudent(ctx, id) {
-        try {
 
-            //const key = ctx.stub.createCompositeKey(this.contractname, [id]);
-            const studRecordAsBytes = await ctx.stub.getState(id);
-            if (!studRecordAsBytes || studRecordAsBytes.toString().length <= 0){
-                throw new Error(`No student of id: '${id}' found!`);
-            }
-            const studRecord = JSON.parse(studRecordAsBytes.toString());
-            return JSON.stringify(studRecord);
-
-        } catch(err) {
-            throw new Error(`getStudent error: ${err}`)
-        }
-    }
-    async addStudent(ctx, addStudentObj){
+    /**
+     * Adds a new student
+     * @param {Context} ctx - Context object
+     * @param {object} addStudentObj - The new student's details
+     * @param {object} gradeKey - A grade object if user wants to use assign an existing grade to this new student.
+     * @returns {object} An object showing success message and the student that was just added to the ledger / world state.
+     */
+    async addStudent(ctx, addStudentObj, gradeKey){
         try {
             const obj = JSON.parse(addStudentObj);
-            this.assets.student.id = obj.id;
-            this.assets.student.name = obj.name;
-            this.assets.student.grades = obj.grades;
+            const gradeKeyObj = JSON.parse(gradeKey);
+            if (!gradeKeyObj.id || !gradeKeyObj.totalGrade){
+                throw new Error("No ID or totalGrade property provided in gradeKey");
+            }
+            const key = Grades.makeKey([gradeKeyObj.id, gradeKeyObj.totalGrade])
+            const grades = await ctx.gradeList.getGrades(key)
+            const newStudentObj = {
+                id: parseInt(obj.id),
+                name: obj.name,
+                year: obj.year,
+                grades: grades
+            }
+            const newStudent = Students.createInstance(newStudentObj);
+            await ctx.studentList.addStudent(newStudent);
 
-            //const key = ctx.stub.createCompositeKey(this.contractname, [id]);
-            await ctx.stub.putState(id, Buffer.from(JSON.stringify(this.assets.student)));
-            
-            return "Added student details successfully!";
-
+            return {
+                successMsg: "Added new student successfully!",
+                newStudent: newStudent
+            }
         } catch(err) {
             throw new Error(`addStudent error: ${err}`);
         }
     }
-    
+    /**
+     * 
+     * @param {Context} ctx - Context object 
+     * @param {object} studentKey - An object that consist of student assets unique properties that were predecided (when we were forming the ledger API and Student class constructor). 
+     * In this case, it's their "id"
+     * @returns {object} An object showing success message and the student from the world state.
+     */
+    async getStudent(ctx, studentKey) {
+        try {
+            const studentKeyObj = JSON.parse(studentKey);
+            // Ledger API methodology requires us to form a key (because composite keys are utilized) and then request for states
+            if (!studentKeyObj.id){
+                throw new Error("No ID property provided for studentKey");
+            }
+            const key = Students.makeKey([studentKeyObj.id])
+            const student = await ctx.studentList.getStudent(key);
+            return {
+                getStudent: student
+            }
+        } catch(err) {
+            throw new Error(`getStudent error: ${err}`)
+        }
+    }
     async updateStudent(ctx, updateStudentObj){
         try {
 
             const obj = JSON.parse(updateStudentObj);
-            const id = obj.id;
-            const grades = obj.grades;
-            //const key = ctx.stub.createCompositeKey(this.contractname, [id]);
-            const studRecordAsBytes = await ctx.stub.getState(id);
-            if (!studRecordAsBytes || studRecordAsBytes.toString().length <= 0){
-                throw new Error(`No student of id: '${id}' found!`);
+            // Here we do not require to use the getters defined in Grade or Student class because we are receiving an updated object which we simply insert into world state / ledger. 
+            const grade = Grades.createInstance(obj.grades);
+            const studentObj = {
+                id: parseInt(obj.id),
+                name: obj.name,
+                year: obj.year,
+                grades: grade
             }
-            const studRecord = JSON.parse(studRecordAsBytes.toString());
-            studRecord.grades = grades;
-            await ctx.stub.putState(id, Buffer.from(JSON.stringify(studRecord)));
-            return "Updated student grades successfully!";
+            const student = Students.createInstance(studentObj);
+            await ctx.studentList.updateStudent(student);
+
+            return {
+                successMsg: "Updated student successfully!",
+                updatedStudent: student
+            }
 
         } catch(err){
             throw new Error(`updateStudent error: ${err}`);
         }
     }
 
-    async deleteStudent(ctx, deleteStudentObj){
+    async deleteStudent(ctx, studentKey){
         try {
-            const obj = JSON.parse(deleteStudentObj);
-            const id = obj.id;
-            //const key = ctx.stub.createCompositeKey(this.contractname, [id]);
-            await ctx.stub.deleteState(id);
+
+            const studentKeyObj = JSON.parse(studentKey);
+            // Just like getStudent, here we need to form a key (because composite keys are utilized) and then delete an asset state (the student of given id)
+            if (!studentKeyObj.id){
+                throw new Error("No ID property provided for studentKey");
+            }
+            const key = Students.makeKey([studentKeyObj.id])
+            await ctx.studentList.deleteStudent(key);
             return { 
-                msg: "Student record deleted successfully!\n"+this.assets,
-                result:''
+                successMsg: "Student record deleted successfully!",
+                removedID: key
             }
 
         } catch(err) {
@@ -180,6 +251,7 @@ class SampleAppContract extends Contract {
     }
 
     async afterTransaction(ctx, result){
+        console.log("Triggered transactionEvent!", result);
         await ctx.stub.setEvent("transactionEvent", result);
     }
 }

@@ -32,7 +32,9 @@ class StateList {
      */
     async addState(state) {
         let key = this.ctx.stub.createCompositeKey(this.name, state.getSplitKey());
+        // console.log("addState key: ",key);
         let data = State.serialize(state);
+        //console.log("addState data: ",data);
         await this.ctx.stub.putState(key, data);
     }
 
@@ -43,9 +45,13 @@ class StateList {
      */
     async getState(key) {
         let ledgerKey = this.ctx.stub.createCompositeKey(this.name, State.splitKey(key));
-        let data = await this.ctx.stub.getState(ledgerKey);
+        // console.log("ledger key: \n",ledgerKey);
+        const data = await this.ctx.stub.getState(ledgerKey);
+        // console.log("getstate data: \n",data)
+        // console.log("Data: \n",data.toString('utf8'));
         if (data && data.toString('utf8')) {
             let state = State.deserialize(data, this.supportedClasses);
+            // console.log("deserialized state: \n", state);
             return state;
         } else {
             return null;
@@ -61,13 +67,12 @@ class StateList {
     async updateState(state) {
         let key = this.ctx.stub.createCompositeKey(this.name, state.getSplitKey());
         let data = State.serialize(state);
-        await this.ctx.stub.putState(key, data);
+        await this.ctx.stub.putState(key.toString(), data);
     }
 
-    async deleteState(state) {
-        let key = this.ctx.stub.createCompositeKey(this.name, state.getSplitKey());
-        let data = State.serialize(state);
-        await this.ctx.stub.deleteState(key, data);
+    async deleteState(key) {
+        let ledgerKey = this.ctx.stub.createCompositeKey(this.name, State.splitKey(key));
+        await this.ctx.stub.deleteState(ledgerKey.toString());
     }
 
     /** Stores the class for future deserialization */

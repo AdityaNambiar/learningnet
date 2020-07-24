@@ -25,7 +25,22 @@ class GradesList extends StateList {
     async deleteGrades(grades) {
         return this.deleteState(grades);
     }
-    s
+    async getAllGrades(){
+        console.log("Getting all grades...");
+        let result = [];
+        const query = JSON.stringify({
+            "selector": {
+                "_id": {
+                    "$regex":GradesList.getClass()
+                }
+            }
+        })
+        for await (const res of this.ctx.stub.getQueryResult(query)){
+            // console.log("res:\n ",res.value.toString('utf8'));
+            result.push(JSON.parse(res.value.toString('utf-8')));
+        }
+        return result;
+    }
     static getClass() {
         return 'org.learningnet.gradeslist';
     }

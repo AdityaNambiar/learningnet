@@ -79,7 +79,7 @@ createChannel(){
     # --tls = boolean value to decide whether to use TLS communication when talking with orderer or not.
     # --cafile = orderer's root CA path
     # For more info: just type 'peer channel' to see help information 
-    echo "Creating channel..."
+    echo -e -n "\n\nCreating channel...\n"
     peer channel create -o localhost:7050 -c $CHANNEL_NAME \
     --ordererTLSHostnameOverride orderer.example.com \
     -f ./channel-artifacts/$CHANNEL_NAME.tx --outputBlock ./channel-artifacts/$CHANNEL_NAME.block \

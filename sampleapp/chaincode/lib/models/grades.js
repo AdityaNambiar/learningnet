@@ -6,7 +6,7 @@ const State = require('../../ledger-api/state.js');
  * Grade asset:
    ```
     grades = {
-        id: timestampVal,  // unique identifier for a grade asset
+        id: int,  // unique identifier for a grade asset
         subA: int,
         subB: int,
         subC: int,
@@ -56,7 +56,7 @@ class Grades extends State {
      * @returns {String} namespace of the smart contract
      */
     static getClass() {
-        return 'org.learningnet.sampleappcontract';
+        return 'org.learningnet.grades';
     }
 }
 

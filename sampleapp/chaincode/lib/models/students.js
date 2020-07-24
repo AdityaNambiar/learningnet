@@ -6,7 +6,7 @@ const State = require('../../ledger-api/state.js');
  * Student asset / participant (specified 'java' for markdown highlighting):
    ```java 
     student = {
-        id: timestampVal,  // unique identifier for a grade asset
+        id: int,  // unique identifier for a grade asset
         name: int,
         year: String,
         grades: int
@@ -15,7 +15,7 @@ const State = require('../../ledger-api/state.js');
  */
 class Students extends State {
     constructor(obj) {
-        super(Students.getClass(),[obj.id]);
+        super(Students.getClass(),[obj.id]); 
         Object.assign(this,obj); // Another reason (previously explained this line in paper.js) why this line is necessary is because of JSON.stringify(this) in toBuffer()
     }
     /** Basic getters and setters */
@@ -55,7 +55,7 @@ class Students extends State {
      * @returns {String} namespace of the smart contract
      */
     static getClass() {
-        return 'org.learningnet.sampleappcontract';
+        return 'org.learningnet.students';
     }
 }
 

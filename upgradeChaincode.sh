@@ -47,10 +47,10 @@ setGlobalsForPeer1Org2() {
 
 CHANNEL_NAME="lnet-1"
 CC_RUNTIME_LANGUAGE="node"
-VERSION="0.0.4"
+VERSION="0.0.1"
 CC_SRC_PATH="${PWD}/sampleapp/chaincode" # Path to package.json
 CC_NAME="learningnet-chaincode"
-SEQUENCE_NO="4"
+SEQUENCE_NO="1"
 
 packageChaincode() {
     rm -rf ${CC_NAME}.tar.gz
@@ -195,6 +195,19 @@ chaincodeQuery() {
 
 # chaincodeQuery
 
+## I've tried this and ended up with an error (for which I don't have time to solve): Error: could not assemble transaction, err proposal response was not successful, error code 500, msg Channel 'lnet-1' has been migrated to the new lifecycle, LSCC is now read-only
+
+# upgradeChaincode() {
+#     setGlobalsForPeer0Org1
+    
+#     peer chaincode upgrade -o localhost:7050 \
+#         --ordererTLSHostnameOverride orderer.example.com \
+#         --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
+#         -C $CHANNEL_NAME -n ${CC_NAME} --version ${VERSION} \
+#         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
+#         -c '{"function": "initStudRecords","Args":[]}'
+}
+
 
 packageChaincode
 installChaincode
@@ -208,3 +221,5 @@ queryCommitted
 chaincodeInvokeInit
 sleep 5
 chaincodeQuery
+
+# upgradeChaincode
