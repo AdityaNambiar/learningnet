@@ -9,7 +9,6 @@ services:
   ca-org1:
     image: hyperledger/fabric-ca:$CA_IMAGE_TAG 
     environment:
-      - FABRIC_CA_CLIENT_HOME=$HOME/fabric-ca/clients
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca.org1.example.com
       - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem

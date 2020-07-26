@@ -20,7 +20,7 @@ perform a clean up using the long command given in [Cleanup](#cleanup)
 3. NetworkUp step: Run `docker-compose down; docker volume prune -f; docker-compose up -d`
 4. ChannelCreate step: To start the channel, Run `./myscripts/createChannel.sh`
 
-_P.S._: Added `./startLNet.sh` to combine all above 4 steps.
+**_P.S._**: Added `./startLNet.sh` to combine all above 4 steps.
 
 #### Sequence to add a new orderer (Static i.e. when you _don't_ have the network up & running):
 
@@ -30,10 +30,10 @@ _P.S._: Added `./startLNet.sh` to combine all above 4 steps.
 	- (Since Raft is recommended starting from v2.0)  
 	Add the new Orderer under 'Orderer/EtcdRaft/Consenters' as shown in below example:  
 	```
-	- Host: ordererN.example.com (or whichever name you gave in 				crypto-config.. just make sure it is written 				 in the 'Hostname.Domain' syntax ~ explained in 				crypto-config yaml file)
-      Port: 8050 
-      ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/ordererN.example.com/tls/server.crt
-      ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/ordererN.example.com/tls/server.crt
+	Host: ordererN.example.com (or whichever name you gave in crypto-config.. just make sure it is written in the 'Hostname Domain' syntax ~ explained in crypto-config yaml file)
+	Port: 8050 
+	ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/ordererN.example.com/tls/server.crt
+    ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/ordererN.example.com/tls/server.crt
 	```  
 3. (Optional) Update the base docker-compose files under 'base' directory (useful if you want to modularize your main docker-compose file)  (To know what I changed, check the "Checkpoint commit: Successfully added second orderer" commit diff)
 4. Use the long cleanup command to remove old crypto material (especially 'crypto' and 'fabric' directories)    
@@ -52,7 +52,7 @@ The curly braces is the _bash_ syntax to combine: `../crypto` & `../fabric`
 Full/Long clean up command:
 `sudo rm -r ./{crypto,fabric,crypto-config,channel-artifacts/*,sampleapp/hyperledger}`
 
-_P.S._: Added `./stopLNet.sh` to combine cleanup work.
+**_P.S._**: Added `./stopLNet.sh` to combine cleanup work.
 
 
 
