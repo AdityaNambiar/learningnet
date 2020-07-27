@@ -7,5 +7,7 @@
  * Example of Affiliation for a college student:-
  * - In a sentence: John is a student in the IT department of TCET
  * - By affiliation syntax: 
-        TCET:
+    affiliation: TCET
+      affiliation: TCET.IT
+        affiliation: TCET.IT.Student
  */
