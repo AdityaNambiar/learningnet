@@ -65,8 +65,7 @@ class SampleAppContract extends Contract {
      * For initialization.
      * Will be called during installation as well as on updates (I.E. Everytime peer has to load the smartcontract)
      * FEW POINTS TO REMEMBER:
-     * 1. A getState() method - like getStateByRange or any 'getter' won't work in init **as far as I tested**. 
-     * 2. The only purpose of init functions are, to name a few, populate ledgers or set some data migration tasks (don't know what this means and how this works) 
+     * 1. The only purpose of init functions are, to name a few, populate ledgers or set some data migration tasks (don't know what this means and how this works) 
      * @param {Context} ctx Contains context (including custom defined context)
      */
     /**

@@ -4,9 +4,10 @@ const FabricCAServices = require('fabric-ca-client');
 const fs = require('fs');
 
 const ccp = require('./getCCPObj.js');
+const generateAffiliation = require('./generateAffiliation.js');
 
 
-const getRegisteredUser = async (username, pType, pIdentifier, affiliation, ) => {
+const getRegisteredUser = async (username, pType, pIdentifier) => {
 
     console.log(JSON.stringify(Wallets))
 
@@ -36,7 +37,7 @@ const getRegisteredUser = async (username, pType, pIdentifier, affiliation, ) =>
         console.log('An identity for the admin user "admin" does not exist in the wallet. Creating one...');
         await enrollAdmin();
         adminIdentity = await wallet.get('admin');
-        console.log("admin identity: ",adminIdentity);
+        console.log("OBSERVE -> admin identity: ",adminIdentity);
         console.log("Admin Enrolled Successfully")
     }
 
@@ -53,7 +54,7 @@ const getRegisteredUser = async (username, pType, pIdentifier, affiliation, ) =>
             affiliation: 'org1.department1', 
             enrollmentID: username, 
             role: 'client',
-            attrs: [
+             attrs: [
                 {
                     name: 'pType',
                     value: pType,
@@ -64,7 +65,6 @@ const getRegisteredUser = async (username, pType, pIdentifier, affiliation, ) =>
                     value: pIdentifier,
                     ecert: true
                 },
-                
             ]
         }, adminUser);
     // const secret = await ca.register({ affiliation: 'org1.department1', enrollmentID: username, role: 'client', attrs: [{ name: 'role', value: 'approver', ecert: true }] }, adminUser);

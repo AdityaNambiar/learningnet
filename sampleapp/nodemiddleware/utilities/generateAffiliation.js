@@ -11,3 +11,35 @@
       affiliation: TCET.IT
         affiliation: TCET.IT.Student
  */
+
+const { AffiliationService, IdentityService } = require('fabric-ca-client'); // For adding affiliation to user and also fetch user from IdentityService
+const { User } = require('fabric-client');
+/**
+ * Generates affiliation for user as string.
+ * Expected params:
+ * @param entites Array of affiliation hierarchy. **The last element must be the registrar (identity who is performing registration)** 
+ * 'User' can be a username.
+ * @example [orgA, deptA, deptB, User]
+ */
+
+
+module.exports.generateAffiliation = (...entities) => {
+  console.log(entities);
+  const username = entities.slice(-1)[0];
+  const user = new User(username);
+  const affStr = entities.join('.');
+  const affiliationService = new AffiliationService();
+  const response = affiliationService.create({
+    name: affStr,
+    force: true
+  }, user);
+  console.log("ServiceResponse: \n", response);
+  if (response.success){
+    return {
+        result: response.Result, 
+        messages: response.Messages
+    };
+  } else {
+    throw new Error(response.Errors);
+  }
+}

@@ -255,7 +255,7 @@ quickExecChaincodeFuncs(){
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
-    -c '{"function": "addStudent","Args":["{\"id\":2,\"name\":\"Aditya Nambiar\",\"year\":\"fourth\"}","{\"id\":1,\"totalGrade\":297}"]}'
+    -c '{"function": "addStudent","Args":["{\"id\":2,\"name\":\"Aditya Nambiar\",\"year\":\"FourthYear\"}","{\"id\":1,\"totalGrade\":297}"]}'
 
     sleep 3 # we give 3 seconds to allow entry of new student in couchdb
     
@@ -278,7 +278,7 @@ quickExecChaincodeFuncs(){
         -C $CHANNEL_NAME -n ${CC_NAME} \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
-    -c '{"function": "updateStudent","Args":["{\"id\":2,\"name\":\"Aditya Nambiar\",\"year\":\"fourth\",\"grades\":{\"id\":3,\"subA\":100,\"subB\":100,\"subC\":100,\"totalGrade\":300}}"]}'
+    -c '{"function": "updateStudent","Args":["{\"id\":2,\"name\":\"Aditya Nambiar\",\"year\":\"FourthYear\",\"grades\":{\"id\":3,\"subA\":100,\"subB\":100,\"subC\":100,\"totalGrade\":300}}"]}'
     
     # # # Just to make sure that the student was updated:
     setGlobalsForPeer0Org2
