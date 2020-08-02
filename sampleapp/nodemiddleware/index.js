@@ -1,5 +1,5 @@
 const express = require('express');
-const config = require('config');
+// const config = require('config');
 const cors = require('cors');
 const bodyparser = require('body-parser');
 const app = express();
@@ -13,7 +13,7 @@ app.use(bodyparser.json())
 app.use(cors());
 
 // Route imports:
-
+app.use('/bnUtil',require('./routes/bnUtil'));
 app.use('/addStudent', require('./routes/addStudent'));
 app.use('/deleteStudent', require('./routes/deleteStudent'));
 app.use('/getStudent', require('./routes/getStudent'));

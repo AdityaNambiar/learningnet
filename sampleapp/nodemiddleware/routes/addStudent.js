@@ -11,7 +11,13 @@ const router = express.Router();
 
 /**
  * Algorithm:
- * 
+ * 1. Initiliaze network.
+ * 2. Register and get user from wallet. If already exists, then set response (400) as this error.
+ * 3. Connect to network via gateway.
+ * 4. Setup the transaction params
+ * 5. Submit or send a query (evaluate) Transaction.
+ * 6. Initiliaze listener for transaction.
+ * 7. As soon as data is received in callback, send it back as route response.
  */
 
 router.post('/', async (req,res)=>{
@@ -20,17 +26,21 @@ router.post('/', async (req,res)=>{
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');
         
         const username = req.body.username;
+        const password = req.body.password;
         const pType = req.body.pType;
         const pIdentifier = req.body.pIdentifier;
+        const orgName = req.body.orgName;
+        const deptName = req.body.deptName;
 
         const gradeId = req.body.gradeId;
         const totalGrade = req.body.totalGrade;
+
         // Register and get the user from wallet.
-        const user = await network.getRegisteredUser(username, pType, pIdentifier);
+        const user = await network.getRegisteredUser(username,password, pType, pIdentifier, orgName, deptName);
         
         // Make a connect to gateway and take the smart contract object to perform transactions.
         contract = await network.connect(user);
-
+        
         // Prepare transaction arguments.
         // I need to stringify because I am parsing this JSON in my chaincode which means I expect a JSON formatted string in the argument.
         const newStudent = JSON.stringify({
@@ -45,21 +55,21 @@ router.post('/', async (req,res)=>{
 
         // Perform transaction.
         let result = await contract.submitTransaction(transactionType, newStudent, gradeKey);
+        
+        // 
         listener = await contract.addContractListener((event) => {
             response = { 
                 message: "Added student successfully!",
                 result: result,
                 payload: event
             }
-            return res.status(200).send(finalResponse);
+            return res.status(200).send(response);
         });
-        // 
-
     } catch(err) {
         response = { 
             message: "[ERROR] Could not add the student: \n " + err
         }
-        contract.removeContractListener(listener);
+        // contract.removeContractListener(listener);
         return res.status(400).send(response);
     }
 })

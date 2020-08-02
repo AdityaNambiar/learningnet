@@ -1,3 +1,7 @@
+/**
+ * @deprecated
+ */
+
 const { Gateway, Wallets } = require('fabric-network');
 const path = require('path');
 const FabricCAServices = require('fabric-ca-client');

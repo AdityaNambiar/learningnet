@@ -1,13 +1,15 @@
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const fs = require('fs');
 //const config = require('config');
 const app = require('express')();
 app.set('jwtPrivateKey', '12345');
 const { IdentityService } = require('fabric-ca-client'); // For adding affiliation to user and also fetch user from IdentityService
+const FabricCAServices = require('fabric-ca-client');
 const { Gateway, Wallets } = require('fabric-network');
 const { User } = require('fabric-client');
 
-const generateAffiliation = require('./generateAffiliation.js');
+const setAffiliation = require('./setAffiliation.js');
 
 /**
  * The algorithm(s) provided by MyNetwork class:
@@ -29,6 +31,9 @@ class MyNetwork{
         this.mspId = 'Org1MSP'
         this.connection = new Gateway();
     }
+    static getCAName() {
+        return this.caName;
+    }
     /**
      * Get the common connection profile from JSON to the JS object structure.
      * @returns {object} Common Connection Profile (ccp) object
@@ -36,7 +41,7 @@ class MyNetwork{
     getCCP() {
         try {
             // load the network configuration
-            const ccpPath = path.resolve(__dirname, '..', 'fabric-artifacts', 'hlf-connection-profile.json');
+            const ccpPath = path.resolve(process.cwd(), 'fabric-artifacts', 'hlf-connection-profile.json');
             const ccpJSON = fs.readFileSync(ccpPath, 'utf8')
             const ccp = JSON.parse(ccpJSON);
             return ccp;
@@ -46,121 +51,123 @@ class MyNetwork{
     }
     async getFSWallet() {
         try {
-            const fsWalletPath =  path.resolve(process.cwd(),'..', 'wallet'); // process.cwd() = current working directory
+            const fsWalletPath =  path.resolve(process.cwd(), 'fabric-artifacts', 'wallet'); // process.cwd() = current working directory
             if (!fs.existsSync(fsWalletPath)){
                 fs.mkdirSync(fsWalletPath);
             }
             const wallet = await Wallets.newFileSystemWallet(fsWalletPath);
-            console.log(`Wallet path: ${walletPath}`);
+            console.log(`Wallet path: ${fsWalletPath}`);
             return wallet;
         } catch(err){
             console.log("[ERROR] Could not set wallet: \n", err);   
         }
     }
-    async getRegisteredUser(username, pType, pIdentifier){
-        /**
-         * Algorithm:
-         *  0. Get CA as an object to work with, with help of CCP.
-         * If Identity is present,
-         *  1. Get the identity from the wallet (if already registered) and return the identity.
-         * If identity is absent,
-         *  1. Check if admin identity is registered and enrolled (logged in)
-         *  2. We fetch the Identity from wallet using IdentityProvider.
-         *  3. Register the user.
-         *  4. Enroll the user.
-         *  5. Put the user into Wallet.
-        */
-        // Step 0: Create a new CA client for interacting with the CA.
-        const caURL = this.getCCP().certificateAuthorities[this.caName].url;
-        const ca = new FabricCAServices(caURL);
+    async getRegisteredUser(username, password, pType, pIdentifier, orgName, deptName){
+        try {
 
-        // Step 1:
-        const wallet = this.getFSWallet();
-        const userIdentity = await wallet.get(username);
-        if (userIdentity) {
-            console.log(`An identity for the user ${username} already exists in the wallet`);
+            /**
+            * Algorithm:
+            *  0. Get CA as an object to work with, with help of CCP.
+            * If Identity is present,
+            *  1. Get the identity from the wallet (if already registered) and return the identity.
+            * If identity is absent,
+            *  1. Check if admin identity is registered and enrolled (logged in)
+            *  2. We fetch the Identity from wallet using IdentityProvider.
+            *  3. Register the user.
+            *  4. Enroll the user.
+            *  5. Put the user into Wallet.
+            */
+            // Step 0: Create a new CA client for interacting with the CA.
+            const caURL = this.getCCP().certificateAuthorities[this.caName].url;
+            const ca = new FabricCAServices(caURL);
+
+            // Step 1:
+            const wallet = await this.getFSWallet();
+            const userIdentity = await wallet.get(username);
+            if (userIdentity) {
+                console.log(`An identity for the user ${username} already exists in the wallet`);
+                var response = {
+                    identity: userIdentity,
+                    message: username + ' enrolled Successfully',
+                };
+                return response
+            }
+
+            // Step 1 (when identity is absent):
+            // Check to see if we've already enrolled the admin user.
+            let adminIdentity = await wallet.get('admin');
+            if (!adminIdentity) {
+                console.log('An identity for the admin user "admin" does not exist in the wallet. Creating one...');
+                await this._enrollAdmin(wallet);
+                adminIdentity = await wallet.get('admin');
+                console.log("OBSERVE -> admin identity: ",adminIdentity);
+                console.log("Admin Enrolled Successfully")
+            }
+
+            // build a user object for authenticating with the CA
+            const adminUser = await this.getUser(wallet,adminIdentity,'admin');
+
+            /**
+            * CA User guide (very useful to practise the hands-on given on the site beforehand): 
+            * https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html
+            */
+            // Register the user, enroll the user, and import the new identity into the wallet.
+            // const secret = await ca.register({  
+            //         enrollmentID: username,
+            //         secret: password,
+            //         type: 'client',
+            //         role: 'client',
+            //         attrs: [
+            //             {
+            //                 name: 'pType',
+            //                 value: pType,
+            //                 ecert: true
+            //             },
+            //             {
+            //                 name: 'pIdentifier',
+            //                 value: pIdentifier,
+            //                 ecert: true
+            //             },
+            //             {
+            //                 name: 'hf.AffiliationMgr',
+            //                 value: "true",
+            //                 ecert: true
+            //             },
+            //             {
+            //                 name: 'hf.Registrar.Roles',
+            //                 value: 'client',
+            //                 ecert: true
+            //             }
+            //         ]
+            //     }, adminUser);
+            
+            const enrollment = await ca.enroll({ enrollmentID: username, enrollmentSecret: password });
+
+            await setAffiliation(ca, await this.getUser(wallet, userIdentity, username) , orgName, deptName);
+            const x509Identity = {
+                credentials: {
+                    certificate: enrollment.certificate,
+                    privateKey: enrollment.key.toBytes(),
+                },
+                mspId: this.mspId,
+                type: 'X.509',
+            };
+
+            await wallet.put(username, x509Identity);
+            console.log(`Successfully registered and enrolled admin user ${username} and imported it into the wallet`);
+
+            const identity = await wallet.get(username);
+            const userObj = new User(username);
             var response = {
-                identity: userIdentity,
+                identity: identity,
+                user: userObj,
                 message: username + ' enrolled Successfully',
             };
-            return response
+            return response;
+        } catch(err) {
+            console.log("[ERROR] Could not register user: \n", err);
+            throw new Error(`[ERROR] Could not register user: \n ${err}`);
         }
-
-        // Step 1 (when identity is absent):
-        // Check to see if we've already enrolled the admin user.
-        let adminIdentity = await wallet.get('admin');
-        if (!adminIdentity) {
-            console.log('An identity for the admin user "admin" does not exist in the wallet. Creating one...');
-            await this._enrollAdmin(wallet);
-            adminIdentity = await wallet.get('admin');
-            console.log("OBSERVE -> admin identity: ",adminIdentity);
-            console.log("Admin Enrolled Successfully")
-        }
-
-        // build a user object for authenticating with the CA
-
-        // v1.4 method to obtain user via wallet:
-        // const provider = wallet.getProviderRegistry().getProvider(adminIdentity.type);
-        // const adminUser = await provider.getUserContext(adminIdentity, 'admin');
-
-        // v2.1/v2.2 method to obtain user:
-        const adminUser = new User('admin'); // MUST be same as bootstrap identity's username given in docker-compose.yaml for CA.
-
-        /**
-        * CA User guide (very useful to practise the hands-on given on the site beforehand): 
-        * https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html
-        */
-        // Register the user, enroll the user, and import the new identity into the wallet.
-        let affStr = generateAffiliation(orgName, deptName);
-        const secret = await ca.register({ 
-                affiliation: affStr.result, 
-                enrollmentID: username, 
-                role: 'client',
-                attrs: [
-                    {
-                        name: 'pType',
-                        value: pType,
-                        ecert: true
-                    },
-                    {
-                        name: 'pIdentifier',
-                        value: pIdentifier,
-                        ecert: true
-                    },
-                    {
-                        name: 'hf.AffiliationMgr',
-                        value: true,
-                        ecert: true
-                    },
-                    {
-                        name: 'hf.Registrar.Roles',
-                        value: 'peer,client',
-                        ecert: true
-                    }
-                ]
-            }, adminUser);
-        
-        const enrollment = await ca.enroll({ enrollmentID: username, enrollmentSecret: secret });
-        const x509Identity = {
-            credentials: {
-                certificate: enrollment.certificate,
-                privateKey: enrollment.key.toBytes(),
-            },
-            mspId: this.mspId,
-            type: 'X.509',
-        };
-
-        await wallet.put(username, x509Identity);
-        console.log(`Successfully registered and enrolled admin user ${username} and imported it into the wallet`);
-
-        const userIdentity = await wallet.get(username);
-        const userObj = new User(username);
-        var response = {
-            identity: userIdentity,
-            user: userObj,
-            message: username + ' enrolled Successfully',
-        };
-        return response;
     }
     /**
      * Enroll Admin identity. Only to be called by getRegisteredUser() when required.
@@ -171,7 +178,7 @@ class MyNetwork{
         console.log('Enrolling admin...')
 
         try {
-            const caInfo = ccp.certificateAuthorities[this.caName];
+            const caInfo = this.getCCP().certificateAuthorities[this.caName];
             const caTLSCACerts = caInfo.tlsCACerts.pem;
             const ca = new FabricCAServices(caInfo.url, { trustedRoots: caTLSCACerts, verify: false }, caInfo.caName);
 
@@ -200,9 +207,18 @@ class MyNetwork{
             return;
         } catch (error) {
             console.error(`Failed to enroll admin user "admin": ${error}`);
+            throw new Error(`Failed to enroll admin user "admin": ${error}`)
         }
     }
-    
+    async getUser(wallet, identity, username) {
+        try {
+            return wallet.getProviderRegistry()
+                                .getProvider(identity.type)
+                                .getUserContext(identity, username);
+        }catch(err) {
+            throw new Error("[ERROR] Could not get user from provider registry: ",err);
+        }
+    }
     /**
      * Some documentation links:
      * 1. Different event handler strategies: https://hyperledger.github.io/fabric-sdk-node/master/module-fabric-network.html#.DefaultEventHandlerStrategies
@@ -266,7 +282,7 @@ class MyNetwork{
         }
     } 
     
-    generateAccesToken(){
+    generateAccessToken(username, pType, pIdentifier){
         return new Promise((resolve,reject)=>{
             try {
                 let privateKey = app.get("jwtPrivateKey");
@@ -274,12 +290,11 @@ class MyNetwork{
                     console.log("Private key not found");
                 
                 }
-                let identityService = new IdentityService(); 
-                const token = jwt.sign({"cardName":idCardName,"pType":pType},privateKey)
+                const token = jwt.sign({ "username": username, "pType": pType, "pIdentifier": pIdentifier},privateKey)
                 console.log(token);
                 resolve(token);
             } catch(err){
-
+                reject(err);
             }
         })
     }
