@@ -21,24 +21,23 @@
 
 
 module.exports = (...entities) => {
-  return new Promise((resolve, reject) => {
-    console.log(entities);
+  return new Promise( async (resolve, reject) => {
     const ca = entities[0];
     const user = entities[1];
     const affStr = entities.slice(2).join('.'); // Slice to get the affiliation hierarchy elements such as [Org,Dept] and join them by Org.Dept format
     const affiliationService = ca.newAffiliationService();
-    const response = affiliationService.update(affStr,{
+    const response = await affiliationService.create({
       name: affStr,
       force: true
     }, user);
-    console.log("ServiceResponse: \n", response);
+    // console.log("ServiceResponse: \n", response);
     if (response.success){
       resolve({
-          result: response.Result, 
-          messages: response.Messages
+          result: response.result, 
+          messages: response.messages
       });
     } else {
-      reject(new Error(response.Errors));
+      reject(new Error(response.errors));
     }
   })
 }

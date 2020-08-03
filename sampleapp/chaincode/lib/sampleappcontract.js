@@ -251,7 +251,7 @@ class SampleAppContract extends Contract {
 
     async afterTransaction(ctx, result){
         console.log("Triggered transactionEvent!", result);
-        await ctx.stub.setEvent("transactionEvent", result);
+        await ctx.stub.setEvent("transactionEvent", Buffer.from(JSON.stringify(result)));
     }
 }
 

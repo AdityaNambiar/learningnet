@@ -20,7 +20,7 @@ const router = express.Router();
  * 7. As soon as data is received in callback, send it back as route response.
  */
 
-router.post('/', async (req,res)=>{
+router.post('/', auth, async (req,res)=>{
     let listener, contract, response;
     try {
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');

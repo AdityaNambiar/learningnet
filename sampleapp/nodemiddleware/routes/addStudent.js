@@ -39,7 +39,7 @@ router.post('/', async (req,res)=>{
         const user = await network.getRegisteredUser(username,password, pType, pIdentifier, orgName, deptName);
         
         // Make a connect to gateway and take the smart contract object to perform transactions.
-        contract = await network.connect(user);
+        contract = await network.connect(user.identity);
         
         // Prepare transaction arguments.
         // I need to stringify because I am parsing this JSON in my chaincode which means I expect a JSON formatted string in the argument.
@@ -56,12 +56,15 @@ router.post('/', async (req,res)=>{
         // Perform transaction.
         let result = await contract.submitTransaction(transactionType, newStudent, gradeKey);
         
-        // 
+        console.log("USER: \n",user.user);
+        const token = await network.generateAccessToken(username, pType, pIdentifier);
+
         listener = await contract.addContractListener((event) => {
             response = { 
                 message: "Added student successfully!",
-                result: result,
-                payload: event
+                result: result.toString(),
+                payload: event,
+                token: token
             }
             return res.status(200).send(response);
         });
@@ -69,7 +72,7 @@ router.post('/', async (req,res)=>{
         response = { 
             message: "[ERROR] Could not add the student: \n " + err
         }
-        // contract.removeContractListener(listener);
+        contract.removeContractListener(listener);
         return res.status(400).send(response);
     }
 })

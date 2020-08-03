@@ -6,10 +6,10 @@ const app = require('express')();
 app.set('jwtPrivateKey', '12345');
 const { IdentityService } = require('fabric-ca-client'); // For adding affiliation to user and also fetch user from IdentityService
 const FabricCAServices = require('fabric-ca-client');
-const { Gateway, Wallets } = require('fabric-network');
+const { Gateway, Wallets, DefaultEventHandlerStrategies } = require('fabric-network');
 const { User } = require('fabric-client');
 
-const setAffiliation = require('./setAffiliation.js');
+const generateAffiliation = require('./generateAffiliation.js');
 
 /**
  * The algorithm(s) provided by MyNetwork class:
@@ -83,7 +83,7 @@ class MyNetwork{
 
             // Step 1:
             const wallet = await this.getFSWallet();
-            const userIdentity = await wallet.get(username);
+            let userIdentity = await wallet.get(username);
             if (userIdentity) {
                 console.log(`An identity for the user ${username} already exists in the wallet`);
                 var response = {
@@ -100,64 +100,71 @@ class MyNetwork{
                 console.log('An identity for the admin user "admin" does not exist in the wallet. Creating one...');
                 await this._enrollAdmin(wallet);
                 adminIdentity = await wallet.get('admin');
-                console.log("OBSERVE -> admin identity: ",adminIdentity);
+                // console.log("OBSERVE -> admin identity: ",adminIdentity);
                 console.log("Admin Enrolled Successfully")
             }
 
             // build a user object for authenticating with the CA
-            const adminUser = await this.getUser(wallet,adminIdentity,'admin');
+            const adminUser = await this.getUser(wallet, adminIdentity, 'admin');
 
+            // Create the affiliation and get the affiliation in string format.
+            // Here we use the adminUser to generate an affiliation and set it to the new user.
+            let affRes = await generateAffiliation(ca, adminUser, orgName, deptName);
+            const affStr = affRes.result.name;
+            
             /**
             * CA User guide (very useful to practise the hands-on given on the site beforehand): 
             * https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html
             */
             // Register the user, enroll the user, and import the new identity into the wallet.
-            // const secret = await ca.register({  
-            //         enrollmentID: username,
-            //         secret: password,
-            //         type: 'client',
-            //         role: 'client',
-            //         attrs: [
-            //             {
-            //                 name: 'pType',
-            //                 value: pType,
-            //                 ecert: true
-            //             },
-            //             {
-            //                 name: 'pIdentifier',
-            //                 value: pIdentifier,
-            //                 ecert: true
-            //             },
-            //             {
-            //                 name: 'hf.AffiliationMgr',
-            //                 value: "true",
-            //                 ecert: true
-            //             },
-            //             {
-            //                 name: 'hf.Registrar.Roles',
-            //                 value: 'client',
-            //                 ecert: true
-            //             }
-            //         ]
-            //     }, adminUser);
-            
-            const enrollment = await ca.enroll({ enrollmentID: username, enrollmentSecret: password });
+            const secret = await ca.register({  
+                    enrollmentID: username,
+                    affiliation: affStr,
+                    enrollmentSecret: password,
+                    secret: password,
+                    type: 'client',
+                    role: 'client',
+                    attrs: [
+                        {
+                            name: 'pType',
+                            value: pType,
+                            ecert: true
+                        },
+                        {
+                            name: 'pIdentifier',
+                            value: pIdentifier,
+                            ecert: true
+                        },
+                        {
+                            name: 'hf.AffiliationMgr',
+                            value: 'true',
+                            ecert: true
+                        },
+                        {
+                            name: 'hf.Registrar.Roles',
+                            value: 'client',
+                            ecert: true
+                        }
+                    ]
+                }, adminUser);
 
-            await setAffiliation(ca, await this.getUser(wallet, userIdentity, username) , orgName, deptName);
+            const enrollment = await ca.enroll({ enrollmentID: username, enrollmentSecret: secret });
             const x509Identity = {
                 credentials: {
                     certificate: enrollment.certificate,
                     privateKey: enrollment.key.toBytes(),
                 },
-                mspId: this.mspId,
+                mspId: this.mspId,  
                 type: 'X.509',
             };
 
             await wallet.put(username, x509Identity);
-            console.log(`Successfully registered and enrolled admin user ${username} and imported it into the wallet`);
 
+            console.log(`Successfully registered and enrolled admin user ${username} and imported it into the wallet`);
+            
             const identity = await wallet.get(username);
-            const userObj = new User(username);
+            const userObj = await this.getUser(wallet, identity, username);
+            console.log("user affiliation: \n",userObj.getAffiliation());
             var response = {
                 identity: identity,
                 user: userObj,
@@ -212,9 +219,11 @@ class MyNetwork{
     }
     async getUser(wallet, identity, username) {
         try {
-            return wallet.getProviderRegistry()
-                                .getProvider(identity.type)
-                                .getUserContext(identity, username);
+            // console.log(username, identity);
+            const providerReg = wallet.getProviderRegistry()
+            const provider = providerReg.getProvider(identity.type) // In our case, Identity are X.509 type.
+            const user = await provider.getUserContext(identity, username);
+            return user;
         }catch(err) {
             throw new Error("[ERROR] Could not get user from provider registry: ",err);
         }
@@ -231,6 +240,7 @@ class MyNetwork{
      */
     async connect(username){
         try{
+            const wallet = this.getFSWallet();
             const ccp = this.getCCP();
             const connectOptions = {
                 wallet, 

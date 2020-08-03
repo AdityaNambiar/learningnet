@@ -1,4 +1,5 @@
-sudo rm -r ${PWD}/{crypto,fabric,crypto-config,channel-artifacts/*};
+sudo rm -r ${PWD}/{crypto,fabric,crypto-config};
+sudo rm ${PWD}/{channel-artifacts/*,sampleapp/nodemiddleware/fabric-artifacts/wallet/*};
 set -e # Stop the script if any error occurs after this point
 docker-compose down; 
 docker volume prune -f;
