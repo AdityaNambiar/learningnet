@@ -12,9 +12,9 @@ const router = express.Router();
 /**
  * Algorithm:
  * 1. Initiliaze network.
- * 2. Register and get user from wallet.
- * 3. Connect to network via gateway.
- * 4. 
+ * 2. Get user from wallet.
+     If user present,
+ * 3. Return token, indicating successfully
  */
 
 router.post('/login', async (req,res)=>{
@@ -23,16 +23,13 @@ router.post('/login', async (req,res)=>{
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');
         
         const username = req.body.username;
-        const password = req.body.password;
         const pType = req.body.pType;
         const pIdentifier = req.body.pIdentifier;
-        const orgName = req.body.orgName;
-        const deptName = req.body.deptName;
 
         // Fetch the user from wallet.
         const userIdentity = await (await network.getFSWallet())
                                           .get(username);
-        console.dir("Received userIdentity: \n", userIdentity);
+        // console.log("Received userIdentity: \n", userIdentity);
         if (!userIdentity) {
             console.log(`An identity for the user ${username} not registered and hence not in wallet.`);
             response = {
@@ -40,11 +37,7 @@ router.post('/login', async (req,res)=>{
             }
             return res.status(400).send(response);
         }
-        const user = await (await network.getFSWallet())
-                                  .getProviderRegistry()
-                                  .getProvider(userIdentity.type)
-                                  .getUserContext(userIdentity,username);
-        console.log("USER: \n",user);
+        // console.log("USER: \n",user);
         const token = await network.generateAccessToken(username, pType, pIdentifier);
         response = {
             message: "Logged in successfully",

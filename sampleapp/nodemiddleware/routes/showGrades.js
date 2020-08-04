@@ -1,7 +1,7 @@
 const MyNetwork  = require('../utilities/MyNetwork');
 const express = require('express');
 // const config = require('config');
-const transactionType = "updateStudent";
+const transactionType = "showGrades";
 const auth = require('../utilities/auth');
 const exportCard = require('../utilities/exportCard')
  
@@ -27,12 +27,6 @@ router.post('/', auth, async (req,res)=>{
         const pType = req.pType;
         const pIdentifier = req.pIdentifier;
 
-        const gradeId = req.body.gradeId;
-        const subA = req.body.subA;
-        const subB = req.body.subB;
-        const subC = req.body.subC;
-        const totalGrade = req.body.totalGrade;
-
         // Fetch the user from wallet.
         const userIdentity = await (await network.getFSWallet())
                                           .get(username);
@@ -48,30 +42,14 @@ router.post('/', auth, async (req,res)=>{
         
         // Make a connect to gateway and take the smart contract object to perform transactions.
         contract = await network.connect(userIdentity);
-
-        // Prepare transaction arguments.
-        // I need to stringify because I am parsing this JSON in my chaincode which means I expect a JSON formatted string in the argument.
-
-        const student = {
-            id: pIdentifier,
-            name: username,
-            year: pType,
-            grades: {
-                id: gradeId,
-                subA:subA,
-                subB:subB,
-                subC:subC,
-                totalGrade:totalGrade
-            }
-        }
-
+        
         // Perform transaction.
-        let result = await contract.submitTransaction(transactionType, student);
+        let result = await contract.evaluateTransaction(transactionType);
         
         // 
         listener = await contract.addContractListener((event) => {
             response = { 
-                message: "Updated student successfully!",
+                message: "Retrieved student successfully!",
                 result: result.toString(),
                 payload: event
             }

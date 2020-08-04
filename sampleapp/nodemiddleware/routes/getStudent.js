@@ -1,18 +1,17 @@
 const MyNetwork  = require('../utilities/MyNetwork');
-// const config = require('config');
-const transactionType = "addStudent";
 const express = require('express');
+// const config = require('config');
+const transactionType = "getStudent";
 const auth = require('../utilities/auth');
-const path = require('path')
-const exportCard = require('../utilities/exportCard')
-const fs = require('fs');
-const router = express.Router();
+const exportCard = require('../utilities/exportCard');
+const { sign } = require('jsonwebtoken');
  
+const router = express.Router();
 
 /**
  * Algorithm:
  * 1. Initiliaze network.
- * 2. Register and get user from wallet.
+ * 2. Get user from wallet.
  * 3. Connect to network via gateway.
  * 4. Setup the transaction params
  * 5. Submit or send a query (evaluate) Transaction.
@@ -25,42 +24,45 @@ router.post('/', auth, async (req,res)=>{
     try {
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');
         
-        const username = req.body.username;
-        const pType = req.body.pType;
-        const pIdentifier = req.body.pIdentifier;
+        const username = req.username;
+        const pType = req.pType;
 
-        const gradeId = req.body.gradeId;
-        const totalGrade = req.body.totalGrade;
-        // Register and get the user from wallet.
-        const user = await network.getRegisteredUser(username, pType, pIdentifier);
+        const sID = req.body.pIdentifier; // A `pIdentifier` of a student 
+        // Fetch the user from wallet.
+        const userIdentity = await (await network.getFSWallet())
+                                          .get(username);
+        
+        // console.log("Received userIdentity: \n", userIdentity);
+        if (!userIdentity) {
+            console.log(`An identity for the user ${username} not registered and hence not in wallet.`);
+            response = {
+                message: "[ERROR] Given user not present in wallet. Please register first via 'addStudent' route",
+            }
+            return res.status(400).send(response);
+        }
         
         // Make a connect to gateway and take the smart contract object to perform transactions.
-        contract = await network.connect(user);
+        contract = await network.connect(userIdentity);
         
         // Prepare transaction arguments.
         // I need to stringify because I am parsing this JSON in my chaincode which means I expect a JSON formatted string in the argument.
-        const newStudent = JSON.stringify({
-            id: pIdentifier,
-            name: username,
-            year: pType   
-        });
-        const gradeKey = JSON.stringify({
-            id: gradeId,
-            totalGrade: totalGrade
+        
+        const studentId = JSON.stringify({
+            id: sID
         });
 
         // Perform transaction.
-        let result = await contract.submitTransaction(transactionType, newStudent, gradeKey);
+        let result = await contract.submitTransaction(transactionType, studentId);
         
         // 
         listener = await contract.addContractListener((event) => {
             response = { 
-                message: "Added student successfully!",
-                result: result,
+                message: `Retrieved student of ${sID} successfully!`,
+                result: result.toString(),
                 payload: event
             }
-            return res.status(200).send(response);
         });
+        return res.status(200).send(response);
     } catch(err) {
         response = { 
             message: "[ERROR] Could not add the student: \n " + err

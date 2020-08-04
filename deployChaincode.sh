@@ -268,7 +268,7 @@ quickExecChaincodeFuncs(){
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
     -c '{"function": "getStudent","Args":["{\"id\":2}"]}'
     
-    setGlobalsForPeer0Org2
+    setGlobalsForPeer0Org2 # evaluateTransaction()
     peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} -c '{"function": "showStudents","Args":[""]}'
 
     setGlobalsForPeer0Org1 
@@ -281,7 +281,7 @@ quickExecChaincodeFuncs(){
     -c '{"function": "updateStudent","Args":["{\"id\":2,\"name\":\"Aditya Nambiar\",\"year\":\"FourthYear\",\"grades\":{\"id\":3,\"subA\":100,\"subB\":100,\"subC\":100,\"totalGrade\":300}}"]}'
     
     # # # Just to make sure that the student was updated:
-    setGlobalsForPeer0Org2
+    setGlobalsForPeer0Org2 # evaluateTransaction()
     peer chaincode query -C $CHANNEL_NAME -n ${CC_NAME} \
     -c '{"function": "getStudent","Args":["{\"id\":2}"]}'
     

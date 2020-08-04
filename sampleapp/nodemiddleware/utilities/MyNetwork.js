@@ -115,6 +115,7 @@ class MyNetwork{
             /**
             * CA User guide (very useful to practise the hands-on given on the site beforehand): 
             * https://hyperledger-fabric-ca.readthedocs.io/en/latest/users-guide.html
+            * P.S.: Attr values must be a string
             */
             // Register the user, enroll the user, and import the new identity into the wallet.
             const secret = await ca.register({  
@@ -127,12 +128,12 @@ class MyNetwork{
                     attrs: [
                         {
                             name: 'pType',
-                            value: pType,
+                            value: pType.toString(),
                             ecert: true
                         },
                         {
                             name: 'pIdentifier',
-                            value: pIdentifier,
+                            value: pIdentifier.toString(),
                             ecert: true
                         },
                         {
@@ -235,16 +236,16 @@ class MyNetwork{
      */
     /**
      * Connects client to Fabric gateway.
-     * @param {string|import('fabric-network').Identity} username Username of client 
+     * @param {import('fabric-network').Identity} user Username of client 
      * @returns - Smart contract object
      */
-    async connect(username){
+    async connect(user){
         try{
             const wallet = this.getFSWallet();
             const ccp = this.getCCP();
             const connectOptions = {
                 wallet, 
-                identity: username, 
+                identity: user, 
                 discovery: { 
                     enabled: true,
                     asLocalhost: true 

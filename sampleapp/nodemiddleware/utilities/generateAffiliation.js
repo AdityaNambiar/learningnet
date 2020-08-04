@@ -22,22 +22,35 @@
 
 module.exports = (...entities) => {
   return new Promise( async (resolve, reject) => {
-    const ca = entities[0];
-    const user = entities[1];
-    const affStr = entities.slice(2).join('.'); // Slice to get the affiliation hierarchy elements such as [Org,Dept] and join them by Org.Dept format
-    const affiliationService = ca.newAffiliationService();
-    const response = await affiliationService.create({
-      name: affStr,
-      force: true
-    }, user);
-    // console.log("ServiceResponse: \n", response);
-    if (response.success){
-      resolve({
-          result: response.result, 
-          messages: response.messages
-      });
-    } else {
-      reject(new Error(response.errors));
+    let response;
+    try {
+      const ca = entities[0];
+      const user = entities[1];
+      const affStr = entities.slice(2).join('.'); // Slice to get the affiliation hierarchy elements such as [Org,Dept] and join them by Org.Dept format
+      const affiliationService = ca.newAffiliationService();
+      response = await affiliationService.create({
+          name: affStr,
+          force: true
+        }, user);
+      // console.log("ServiceResponse: \n", response);
+      if (response.success){
+        return resolve({
+            result: response.result, 
+            messages: response.messages
+        });
+      } else {
+        return reject(new Error(response.errors));
+      }
+    } catch(err){
+      console.log(err.errors[0].message, err.errors[0].message.search("Affiliation already exists"));
+      if (err.errors[0].message.search("Affiliation already exists") != -1){
+        return reject(new Error(err));
+      } else {
+        return resolve({
+            result: response.result, 
+            messages: response.messages
+        });
+      }
     }
   })
 }
