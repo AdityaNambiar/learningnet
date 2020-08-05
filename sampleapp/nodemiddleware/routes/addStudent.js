@@ -52,7 +52,7 @@ router.post('/', async (req,res)=>{
             id: gradeId,
             totalGrade: totalGrade
         });
-
+        console.log(gradeKey);
         // Perform transaction.
         let result = await contract.submitTransaction(transactionType, newStudent, gradeKey);
         
@@ -66,13 +66,13 @@ router.post('/', async (req,res)=>{
                 payload: event,
                 token: token
             }
-            return res.status(200).send(response);
         });
+        contract.removeContractListener(listener);
+        return res.status(200).send(response);
     } catch(err) {
         response = { 
             message: "[ERROR] Could not add the student: \n " + err
         }
-        contract.removeContractListener(listener);
         return res.status(400).send(response);
     }
 })

@@ -22,34 +22,29 @@
 
 module.exports = (...entities) => {
   return new Promise( async (resolve, reject) => {
-    let response;
+    let response, affStr;
     try {
       const ca = entities[0];
       const user = entities[1];
-      const affStr = entities.slice(2).join('.'); // Slice to get the affiliation hierarchy elements such as [Org,Dept] and join them by Org.Dept format
+      affStr = entities.slice(2).join('.'); // Slice to get the affiliation hierarchy elements such as [Org,Dept] and join them by Org.Dept format
       const affiliationService = ca.newAffiliationService();
       response = await affiliationService.create({
           name: affStr,
           force: true
         }, user);
       // console.log("ServiceResponse: \n", response);
-      if (response.success){
-        return resolve({
-            result: response.result, 
-            messages: response.messages
-        });
-      } else {
-        return reject(new Error(response.errors));
-      }
+      return resolve({
+          result: response.result
+      });
     } catch(err){
-      console.log(err.errors[0].message, err.errors[0].message.search("Affiliation already exists"));
-      if (err.errors[0].message.search("Affiliation already exists") != -1){
-        return reject(new Error(err));
-      } else {
+      if (err.errors[0].message.search("Affiliation already exists") == 0){ // Means if the error is this one, then we return it.
         return resolve({
-            result: response.result, 
-            messages: response.messages
+          result: {
+            name: affStr
+          }
         });
+      } else { // If any other error comes, we throw an exception.
+        return reject(new Error(err));
       }
     }
   })

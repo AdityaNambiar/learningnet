@@ -52,7 +52,7 @@ router.post('/', auth, async (req,res)=>{
         // Prepare transaction arguments.
         // I need to stringify because I am parsing this JSON in my chaincode which means I expect a JSON formatted string in the argument.
 
-        const student = {
+        const student = JSON.stringify({
             id: pIdentifier,
             name: username,
             year: pType,
@@ -63,7 +63,7 @@ router.post('/', auth, async (req,res)=>{
                 subC:subC,
                 totalGrade:totalGrade
             }
-        }
+        })
 
         // Perform transaction.
         let result = await contract.submitTransaction(transactionType, student);
@@ -72,16 +72,16 @@ router.post('/', auth, async (req,res)=>{
         listener = await contract.addContractListener((event) => {
             response = { 
                 message: "Updated student successfully!",
-                result: result.toString(),
+                result: JSON.parse(result.toString()),
                 payload: event
             }
-            return res.status(200).send(response);
         });
+        contract.removeContractListener(listener);
+        return res.status(200).send(response);
     } catch(err) {
         response = { 
             message: "[ERROR] Could not add the student: \n " + err
         }
-        contract.removeContractListener(listener);
         return res.status(400).send(response);
     }
 })

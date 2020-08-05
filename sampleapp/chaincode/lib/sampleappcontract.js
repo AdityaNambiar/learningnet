@@ -159,7 +159,8 @@ class SampleAppContract extends Contract {
         try {
             const obj = JSON.parse(addStudentObj);
             const gradeKeyObj = JSON.parse(gradeKey);
-            if (!gradeKeyObj.id || !gradeKeyObj.totalGrade){
+            if (!(gradeKeyObj.id).toString() || !(gradeKeyObj.totalGrade).toString()){ 
+            // id & totalGrade are integers. An int value can also be '0' leading to falsifying this condition. Hence we convert to string indicating it as actual value and not a boolean.
                 throw new Error("No ID or totalGrade property provided in gradeKey");
             }
             const key = Grades.makeKey([gradeKeyObj.id, gradeKeyObj.totalGrade])
@@ -192,7 +193,7 @@ class SampleAppContract extends Contract {
         try {
             const studentKeyObj = JSON.parse(studentKey);
             // Ledger API methodology requires us to form a key (because composite keys are utilized) and then request for states
-            if (!studentKeyObj.id){
+            if (!(studentKeyObj.id).toString()){
                 throw new Error("No ID property provided for studentKey");
             }
             const key = Students.makeKey([studentKeyObj.id])
@@ -234,7 +235,7 @@ class SampleAppContract extends Contract {
 
             const studentKeyObj = JSON.parse(studentKey);
             // Just like getStudent, here we need to form a key (because composite keys are utilized) and then delete an asset state (the student of given id)
-            if (!studentKeyObj.id){
+            if (!(studentKeyObj.id).toString()){
                 throw new Error("No ID property provided for studentKey");
             }
             const key = Students.makeKey([studentKeyObj.id])

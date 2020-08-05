@@ -14,6 +14,7 @@ app.use(cors());
 
 // Route imports:
 app.use('/bnUtil',require('./routes/bnUtil'));
+app.use('/showGrades',require('./routes/showGrades'));
 app.use('/addStudent', require('./routes/addStudent'));
 app.use('/deleteStudent', require('./routes/deleteStudent'));
 app.use('/getStudent', require('./routes/getStudent'));

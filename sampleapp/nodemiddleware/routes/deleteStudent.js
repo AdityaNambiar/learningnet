@@ -58,16 +58,16 @@ router.post('/', auth, async (req,res)=>{
         listener = await contract.addContractListener((event) => {
             response = { 
                 message: `Deleted student of ${sID} successfully!`,
-                result: result.toString(),
+                result: JSON.parse(result.toString()),
                 payload: event
             }
-            return res.status(200).send(response);
         });
+        contract.removeContractListener(listener);
+        return res.status(200).send(response);
     } catch(err) {
         response = { 
             message: "[ERROR] Could not add the student: \n " + err
         }
-        contract.removeContractListener(listener);
         return res.status(400).send(response);
     }
 })

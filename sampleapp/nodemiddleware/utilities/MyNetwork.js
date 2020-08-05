@@ -166,6 +166,7 @@ class MyNetwork{
             const identity = await wallet.get(username);
             const userObj = await this.getUser(wallet, identity, username);
             console.log("user affiliation: \n",userObj.getAffiliation());
+            console.info(`Affiliation of '${username}' should be: ${affStr}`);
             var response = {
                 identity: identity,
                 user: userObj,
