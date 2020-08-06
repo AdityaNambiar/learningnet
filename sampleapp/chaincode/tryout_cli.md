@@ -1,3 +1,4 @@
+**Note**: Before executing the below scripts, be sure to stay on the `learningnet/` folder (because that is where the scripts reside. This particular file had to be kept here for organizing purposes.  
 - Run `./deployChaincode.sh` **after** `./startLNet.sh`... you need your network so that chaincode script can send requests to peers.
 
 - If you make any changes in the chaincode `lib/sampleappcontract.js`, make changes in mentioned files (read the point given below) and then run `./upgradeChaincode.sh`.
