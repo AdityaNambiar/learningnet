@@ -8,8 +8,9 @@ I have not written a frontend because I intended to test using [Postman](https:/
 
 For people new to NodeJS,
 `routes` & `utilities` - (_not fabric specific_) these folders consist of the files that take care of the client requests.  
-`index.js` - (_not fabric specific_) Index file for requests and initial setup. 
-`package.json` - (_not fabric specific_) consists of list of dependencies installed. `package-lock.json` is just an elaborated version of `package.json`.
+`index.js` - (_not fabric specific_) Index file for requests and initial setup.  
+`package.json` - (_not fabric specific_) consists of list of dependencies installed.  
+`package-lock.json` is just an elaborated version of `package.json`.
 
 Postman API collection:
 https://www.getpostman.com/collections/393b65a16637818dd768
