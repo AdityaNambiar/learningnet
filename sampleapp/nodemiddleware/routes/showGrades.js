@@ -24,8 +24,6 @@ router.post('/', auth, async (req,res)=>{
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');
         
         const username = req.username;
-        const pType = req.pType;
-        const pIdentifier = req.pIdentifier;
 
         // Fetch the user from wallet.
         const userIdentity = await (await network.getFSWallet())

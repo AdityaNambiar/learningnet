@@ -14,7 +14,7 @@ const router = express.Router();
  * 1. Initiliaze network.
  * 2. Get user from wallet.
      If user present,
- * 3. Return token, indicating successfully
+ * 3. Return token, indicating user logged in successfully
  */
 
 router.post('/login', async (req,res)=>{

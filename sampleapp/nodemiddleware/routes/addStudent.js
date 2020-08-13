@@ -23,6 +23,8 @@ const router = express.Router();
 router.post('/', async (req,res)=>{
     let listener, contract, response;
     try {
+        // Copy channel name from 'deployChaincode.sh' script.
+        // Chaincode name must be copied from 'package.json' under ../../chaincode/ (chaincode folder under sampleapp)
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');
         
         const username = req.body.username;

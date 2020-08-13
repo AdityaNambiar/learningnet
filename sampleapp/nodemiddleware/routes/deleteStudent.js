@@ -24,10 +24,8 @@ router.post('/', auth, async (req,res)=>{
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');
         
         const username = req.username;
-        const pType = req.pType;
-        const pIdentifier = req.pIdentifier;
+        const sID = req.body.pIdentifier; // Route will pass the student ID which needs to be removed. 
 
-        const sID = req.body.sID;
         // Fetch the user from wallet.
         const userIdentity = await (await network.getFSWallet())
                                           .get(username);
