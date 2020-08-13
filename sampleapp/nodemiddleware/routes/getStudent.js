@@ -56,7 +56,7 @@ router.post('/', auth, async (req,res)=>{
         // 
         listener = await contract.addContractListener((event) => {
             response = { 
-                message: `Retrieved student of ${sID} successfully!`,
+                message: `Retrieved student #${sID} successfully!`,
                 result: JSON.parse(result.toString()),
                 payload: event
             }

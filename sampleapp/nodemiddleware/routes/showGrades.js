@@ -24,7 +24,7 @@ router.get('/', auth, async (req,res)=>{
         const network = new MyNetwork('lnet-1', 'learningnet-chaincode','');
         
         const username = req.username;
-
+        console.log(network, username);
         // Fetch the user from wallet.
         const userIdentity = await (await network.getFSWallet())
                                           .get(username);
@@ -47,7 +47,7 @@ router.get('/', auth, async (req,res)=>{
         // 
         listener = await contract.addContractListener((event) => {
             response = { 
-                message: "Retrieved student successfully!",
+                message: "Retrieved all grades successfully!",
                 result: JSON.parse(result.toString()),
                 payload: event
             }

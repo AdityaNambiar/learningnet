@@ -13,4 +13,4 @@ For people new to NodeJS,
 `package-lock.json` is just an elaborated version of `package.json`.
 
 Postman API collection:  
-https://www.getpostman.com/collections/393b65a16637818dd768
+https://www.getpostman.com/collections/8e59ad98aad801f20ed0
