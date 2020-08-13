@@ -7,3 +7,5 @@ crypto-config
 /org3-artifacts/crypto-config/*
 /connection-*.*
 **/node_modules
+sampleapp/nodemiddleware/fabric-artifacts/wallet/*
+channel-artifacts/*

@@ -12,5 +12,5 @@ For people new to NodeJS,
 `package.json` - (_not fabric specific_) consists of list of dependencies installed.  
 `package-lock.json` is just an elaborated version of `package.json`.
 
-Postman API collection:
+Postman API collection:  
 https://www.getpostman.com/collections/393b65a16637818dd768
