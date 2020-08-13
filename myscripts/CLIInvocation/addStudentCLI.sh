@@ -1,5 +1,5 @@
 # Usage:
-# ./myscripts/CLIInvocation/addStudentCLI.sh <id> <grade>
+# ./myscripts/CLIInvocation/addStudentCLI.sh <student> <grade>
 
 # Execute the script from learningnet/ 
 
