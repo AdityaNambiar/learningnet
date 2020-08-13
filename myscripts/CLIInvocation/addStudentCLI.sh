@@ -33,4 +33,4 @@ addStudent() {
         -c "{\"function\":\"addStudent\",\"Args\":[\"$1\", \"$2\"]}"
 }
 
-addStudent $@ # Pass script arguments
+addStudent "$@" # Pass script arguments

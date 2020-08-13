@@ -107,7 +107,7 @@ class SampleAppContract extends Contract {
         }
         const studentobj2 = {
             id: 1,
-            name: 'Altair da Masyaf',
+            name: 'Altair',
             year: 'first',
             grade: g2
         }

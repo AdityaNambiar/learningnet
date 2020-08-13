@@ -33,4 +33,4 @@ deleteStudent() {
         -c "{\"function\":\"deleteStudent\",\"Args\":[\"$1\"]}"
 }
 
-deleteStudent $@ # Pass script arguments
+deleteStudent "$@" # Pass script arguments

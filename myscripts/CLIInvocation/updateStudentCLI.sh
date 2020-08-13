@@ -1,5 +1,5 @@
 # Usage:
-# ./myscripts/CLIInvocation/updateStudentCLI.sh <student> <grade>
+# ./myscripts/CLIInvocation/updateStudentCLI.sh <student>
 
 # Execute the script from learningnet/
 
@@ -29,7 +29,7 @@ updateStudent() {
         --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA \
         --peerAddresses localhost:7051 --tlsRootCertFiles $PEER0_ORG1_CA \
         --peerAddresses localhost:9051 --tlsRootCertFiles $PEER0_ORG2_CA \
-        -c "{\"function\":\"updateStudent\",\"Args\":[\"$1\", \"$2\"]}"
+        -c "{\"function\":\"updateStudent\",\"Args\":[\"$1\"]}"
 }
 
-updateStudent $@ # Pass script arguments
+updateStudent "$@" # Pass script arguments
