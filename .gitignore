@@ -9,3 +9,5 @@ crypto-config
 **/node_modules
 sampleapp/nodemiddleware/fabric-artifacts/wallet/*
 channel-artifacts/*
+learningnet-chaincode.tar.gz
+log.txt
